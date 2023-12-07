@@ -19,13 +19,35 @@ struct se_vhost {
 	char *path_error;
 };
 
-void on_connection(int fd_client, struct se_vhost *vhosts, int vhostsc) {
+char* constructFilePath(const char* root, const char* file) {
+	if (root == NULL || file == NULL) return NULL;
+
+	int rootLen = strlen(root), fileLen = strlen(file);
+
+	int rootEndOnSlash = root[rootLen - 1] == '/' || file[0] == '/';
+	int fileEndOnSlash = file[fileLen - 1] == '/';
+
+	int pathLen = rootLen + !rootEndOnSlash + fileLen + (fileEndOnSlash * 8) + 1;
+	char* path = malloc(pathLen * sizeof(char));
+	memset(path, 0, pathLen);
+	strncpy(path, root, rootLen);
+	if (!rootEndOnSlash) strcat(path, "/");
+	strcat(path, file);
+	if (fileEndOnSlash)  strcat(path, "index.md");
+
+	return path;
+}
+
+void on_connection(const int fd_client, const struct se_vhost *vhosts, const int vhostsc) {
+	printf("[%d] Connected successfully!\n", fd_client);
+
 	char address[256];
 	read(fd_client, address, 256);
+	printf("[%d] Requested %s\n", fd_client, address);
 
 	int usernameLen = strchr(address, '@') - address;
 
-	struct se_vhost *vhost = NULL;
+	const struct se_vhost *vhost = NULL;
 	for (int i = 0; i < vhostsc; i++) {
 		if (strncmp(vhosts[i].username, address, usernameLen) == 0) {
 			vhost = vhosts + i;
@@ -38,17 +60,24 @@ void on_connection(int fd_client, struct se_vhost *vhosts, int vhostsc) {
 		return;
 	}
 
-	int filePathSize = strlen(vhost->path_root) + strlen(address + usernameLen + 1) + 1;
-	char* filePath = malloc(filePathSize * sizeof(char));
-	memset(filePath, 0, filePathSize);
-	strncpy(filePath, vhost->path_root, strlen(vhost->path_root));
-	strcat(filePath, address + usernameLen + 1);
-
-	printf("%s\n", filePath);
+	char* filePath = constructFilePath(vhost->path_root, address + usernameLen + 1);
 
 	int fd = open(filePath, O_RDONLY);
+	if (fd < 0) {
+		fprintf(stderr, "[%d] Error opening %s\n", fd_client, filePath);
+
+		free(filePath);
+		filePath = constructFilePath(vhost->path_root, vhost->path_error);
+		fd = open(filePath, O_RDONLY);
+		if (fd < 0) {
+			fprintf(stderr, "[%d] Error opening %s\n", fd_client, filePath);
+			free(filePath);
+			return;
+		}
+	}
+
+	printf("[%d] Serving %s\n", fd_client, filePath);
 	free(filePath);
-	herr(fd, "open");
 
 	char buff[256];
 	memset(buff, 0, sizeof(buff));
@@ -57,6 +86,8 @@ void on_connection(int fd_client, struct se_vhost *vhosts, int vhostsc) {
 		memset(buff, 0, sizeof(buff));
 	}
 	close(fd);
+
+	printf("[%d] Served!\n", fd_client);
 }
 
 int main(int argc, char* argv[]) {
