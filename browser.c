@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include <string.h>
 #include <util.h>
 
 int main(int argc, char* argv[]) {
@@ -21,12 +22,16 @@ int main(int argc, char* argv[]) {
 
 	herr(connect(fd_socket, (struct sockaddr*)&sa_server, sizeof(struct sockaddr_in)), "connect");
 
-	char msg[] = "Hello from browser";
+	char msg[] = "test.txt";
 	write(fd_socket, msg, sizeof(msg));
 
 	char buff[256];
+	memset(buff, 0, sizeof(buff));
+	while (read(fd_socket, buff, 256)) {
+		write(1, buff, strlen(buff));
+		memset(buff, 0, sizeof(buff));
+	}
 	read(fd_socket, buff, 256);
-	printf("Received: %s\n", buff);
 
 	close(fd_socket);
 }

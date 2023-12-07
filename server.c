@@ -6,7 +6,9 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>
 
+#include <string.h>
 #include <util.h>
 
 int main(int argc, char* argv[]) {
@@ -30,10 +32,15 @@ int main(int argc, char* argv[]) {
 
 	char buff[256];
 	read(fd_client, buff, 256);
-	printf("Received: %s\n", buff);
 
-	char response[] = "Server received message!";
-	write(fd_client, response, sizeof(response));
+	int fd;
+	herr(fd = open(buff, O_RDONLY), "open");
+	memset(buff, 0, sizeof(buff));
+	while (read(fd, buff, 256)) {
+		write(fd_client, buff, strlen(buff));
+		memset(buff, 0, sizeof(buff));
+	}
+	close(fd);
 
 	close(fd_socket);
 }
