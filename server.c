@@ -11,73 +11,67 @@
 #include <sys/wait.h>
 
 #include <string.h>
+#include <sds/sds.h>
 #include <util.h>
 
-struct se_vhost {
-	char *username;
-	char *path_root;
-	char *path_error;
-};
+#define username   0
+#define path_root  1
+#define path_error 2
 
-char* constructFilePath(const char* root, const char* file) {
-	if (root == NULL || file == NULL) return NULL;
-
-	int rootLen = strlen(root), fileLen = strlen(file);
-
-	int rootEndOnSlash = root[rootLen - 1] == '/' || file[0] == '/';
-	int fileEndOnSlash = file[fileLen - 1] == '/';
-
-	int pathLen = rootLen + !rootEndOnSlash + fileLen + (fileEndOnSlash * 8) + 1;
-	char* path = malloc(pathLen * sizeof(char));
-	memset(path, 0, pathLen);
-	strncpy(path, root, rootLen);
-	if (!rootEndOnSlash) strcat(path, "/");
-	strcat(path, file);
-	if (fileEndOnSlash)  strcat(path, "index.md");
-
+sds constructFilePath(const sds root, const char* file) {
+	sds path = sdsdup(root);
+	if (root[sdslen(root)-1] != '/' && file[0] != '/')
+		path = sdscat(path, "/");
+	path = sdscat(path, file);
+	if (file[strlen(file)-1] == '/')
+		path = sdscat(path, "index.md");
 	return path;
 }
 
-void on_connection(const int fd_client, const struct se_vhost *vhosts, const int vhostsc) {
-	printf("[%d] Connected successfully!\n", fd_client);
+void on_connection(const char* client, const int fd_client, sds **vhosts, const int vhostsc) {
+	printf("[%s@%d] Connected successfully!\n", client, fd_client);
 
+	/* Get address request */
 	char address[256];
 	read(fd_client, address, 256);
-	printf("[%d] Requested %s\n", fd_client, address);
+	printf("[%s@%d] Requested %s\n", client, fd_client, address);
 
+	/* Does vhosts contain an address with the username? */
 	int usernameLen = strchr(address, '@') - address;
 
-	const struct se_vhost *vhost = NULL;
+	const sds *vhost = NULL;
 	for (int i = 0; i < vhostsc; i++) {
-		if (strncmp(vhosts[i].username, address, usernameLen) == 0) {
-			vhost = vhosts + i;
+		if (strncmp(vhosts[i][username], address, usernameLen) == 0) {
+			vhost = *vhosts + i;
 			break;
 		}
 	}
 
 	if (vhost == NULL) {
-		fprintf(stderr, "[%d] Unknown username in address %s\n", fd_client, address);
+		fprintf(stderr, "[%s@%d] Unknown username in address %s\n", client, fd_client, address);
 		return;
 	}
 
-	char* filePath = constructFilePath(vhost->path_root, address + usernameLen + 1);
+	/* Try to open the requested file or the error file */
+	sds filePath = constructFilePath(vhost[path_root], address + usernameLen + 1);
 
 	int fd = open(filePath, O_RDONLY);
 	if (fd < 0) {
-		fprintf(stderr, "[%d] Error opening %s\n", fd_client, filePath);
+		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, filePath);
 
-		free(filePath);
-		filePath = constructFilePath(vhost->path_root, vhost->path_error);
+		sdsfree(filePath);
+		filePath = constructFilePath(vhost[path_root], vhost[path_error]);
 		fd = open(filePath, O_RDONLY);
 		if (fd < 0) {
-			fprintf(stderr, "[%d] Error opening %s\n", fd_client, filePath);
-			free(filePath);
+			fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, filePath);
+			sdsfree(filePath);
 			return;
 		}
 	}
 
-	printf("[%d] Serving %s\n", fd_client, filePath);
-	free(filePath);
+	/* Send the file to the client */
+	printf("[%s@%d] Serving %s\n", client, fd_client, filePath);
+	sdsfree(filePath);
 
 	char buff[256];
 	memset(buff, 0, sizeof(buff));
@@ -85,12 +79,22 @@ void on_connection(const int fd_client, const struct se_vhost *vhosts, const int
 		write(fd_client, buff, strlen(buff));
 		memset(buff, 0, sizeof(buff));
 	}
-	close(fd);
 
-	printf("[%d] Served!\n", fd_client);
+	/* Finalize */
+	close(fd);
+	printf("[%s@%d] Served!\n", client, fd_client);
 }
 
 int main(int argc, char* argv[]) {
+	/*
+	 * Get hosts
+	 */
+
+	sds **vhosts = malloc((argc - 1) * sizeof(sds*));
+	for (int i = 1, temp = 0; i < argc; i++) {
+		vhosts[i-1] = sdssplitlen(argv[i], strlen(argv[i]), ",", 1, &temp);
+	}
+	
 	/*
 	 * Create socket for accepting connections
 	 */
@@ -117,25 +121,19 @@ int main(int argc, char* argv[]) {
 	 * Accept connection on the socket
 	 */
 
-	struct se_vhost vhosts[1] = {
-	{
-		.username = "hello",
-		.path_root = ".",
-		.path_error = NULL,
-	} };
-
 	struct sockaddr_in sa_client;
 	socklen_t sa_client_size = sizeof(struct sockaddr_in);
 	int fd_client;
 	int count = 0;
-	while (count < 2) {
+	while (count < 5) {
 		herr(fd_client = accept(fd_socket, (struct sockaddr*)&sa_client, &sa_client_size), "accept");
+		char* strAddr = inet_ntoa(sa_client.sin_addr);
 		count++;
-		int fp = fork();
 
+		int fp = fork();
 		if (fp == 0) {
 			close(fd_socket);
-			on_connection(fd_client, vhosts, 1);
+			on_connection(strAddr, fd_client, vhosts, argc - 1);
 			close(fd_client);
 			return 0;
 		}
@@ -145,4 +143,9 @@ int main(int argc, char* argv[]) {
 
 	printf("Exiting");
 	while(wait(NULL) > 0);
+
+	for (int i = 1; i < argc; i++) {
+		sdsfreesplitres(vhosts[i-1], 3);
+	}
+	free(vhosts);
 }
