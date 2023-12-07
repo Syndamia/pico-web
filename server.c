@@ -85,6 +85,14 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	printf("[%s@%d] Served!\n", client, fd_client);
 }
 
+
+void freeVhosts(sds **vhosts, int argc) {
+	for (int i = 1; i < argc; i++) {
+		sdsfreesplitres(vhosts[i-1], 3);
+	}
+	free(vhosts);
+}
+
 int main(int argc, char* argv[]) {
 	/*
 	 * Get hosts
@@ -135,6 +143,7 @@ int main(int argc, char* argv[]) {
 			close(fd_socket);
 			on_connection(strAddr, fd_client, vhosts, argc - 1);
 			close(fd_client);
+			freeVhosts(vhosts, argc);
 			return 0;
 		}
 		close(fd_client);
@@ -144,8 +153,5 @@ int main(int argc, char* argv[]) {
 	printf("Exiting");
 	while(wait(NULL) > 0);
 
-	for (int i = 1; i < argc; i++) {
-		sdsfreesplitres(vhosts[i-1], 3);
-	}
-	free(vhosts);
+	freeVhosts(vhosts, argc);
 }
