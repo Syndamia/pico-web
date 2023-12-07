@@ -27,7 +27,6 @@ void freeVhosts(sds **vhosts, int argc) {
 		sdsfreesplitres(vhosts[i-1], 3);
 	}
 	free(vhosts);
-	printf("freed\n");
 }
 
 int streq(const char* first, const char* second) {
@@ -78,17 +77,17 @@ int main(int argc, char* argv[]) {
 	 * Accept connection on the socket
 	 */
 
-	struct sockaddr_in sa_client = {
-		.sin_family = AF_INET,
-		.sin_port = 0,
-		.sin_addr.s_addr = 0,
-	};
-	socklen_t sa_client_size = sizeof(struct sockaddr_in);
-
 	int pid_connections = fork();
 	if (pid_connections == 0) {
-		signal(SIGTERM, handler_refuseConnections);
+		// Client address
+		struct sockaddr_in sa_client = {
+			.sin_family = AF_INET,
+			.sin_port = 0,
+			.sin_addr.s_addr = 0,
+		};
+		socklen_t sa_client_size = sizeof(struct sockaddr_in);
 
+		// Data for pselect
 		fd_set rfds;
 		struct timespec tv = {
 			.tv_sec = 0,
@@ -99,13 +98,18 @@ int main(int argc, char* argv[]) {
 		int count = 0;
 		int pselectStat = 0;
 
+		// Effecitvely stops the cycle on SIGTERM
+		signal(SIGTERM, handler_refuseConnections);
+
 		while (acceptConnections) {
+			/* Check if fd_socket has something we can read */
 			FD_ZERO(&rfds);
 			FD_SET(fd_socket, &rfds);
 
 			herrc(pselect(fd_socket + 1, &rfds, NULL, NULL, &tv, NULL), "pselect");
 			if (!FD_ISSET(fd_socket, &rfds)) continue;
 
+			/* If so, accept the connection and pass execution to the "main" logic */
 			fd_client = accept(fd_socket, (struct sockaddr*)&sa_client, &sa_client_size);
 			herrc(fd_client, "accept");
 
@@ -136,11 +140,15 @@ int main(int argc, char* argv[]) {
 
 	close(fd_socket);
 
+	// Get a line
 	char line[256];
 	fgets(line, 256, stdin);
 
+	// Get command name and it's arguments
+	// Currently no command takes arguments
 	char name[MAX_LEN_COMMAND+1];
 	int argsAssigned = sscanf(line, COMMAND_FORMAT, name);
+
 	while (name[0] != 'q' && name[0] != 'e' && !streq(name, "quit") && !streq(name, "exit")) {
 		if (argsAssigned < 1) {
 			printf("Bad command syntax!\n");
@@ -160,6 +168,7 @@ int main(int argc, char* argv[]) {
 			printf("Unknown command %s!\n", name);
 		}
 
+		// Get line and divided it into command name and arguments
 		fgets(line, 256, stdin);
 		argsAssigned = sscanf(line, COMMAND_FORMAT, name);
 	}
