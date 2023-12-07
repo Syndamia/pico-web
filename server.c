@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/wait.h>
@@ -12,12 +13,44 @@
 #include <string.h>
 #include <util.h>
 
-void on_connection(int fd_client) {
-	char buff[256];
-	read(fd_client, buff, 256);
+struct se_vhost {
+	char *username;
+	char *path_root;
+	char *path_error;
+};
 
-	int fd;
-	herr(fd = open(buff, O_RDONLY), "open");
+void on_connection(int fd_client, struct se_vhost *vhosts, int vhostsc) {
+	char address[256];
+	read(fd_client, address, 256);
+
+	int usernameLen = strchr(address, '@') - address;
+
+	struct se_vhost *vhost = NULL;
+	for (int i = 0; i < vhostsc; i++) {
+		if (strncmp(vhosts[i].username, address, usernameLen) == 0) {
+			vhost = vhosts + i;
+			break;
+		}
+	}
+
+	if (vhost == NULL) {
+		fprintf(stderr, "[%d] Unknown username in address %s\n", fd_client, address);
+		return;
+	}
+
+	int filePathSize = strlen(vhost->path_root) + strlen(address + usernameLen + 1) + 1;
+	char* filePath = malloc(filePathSize * sizeof(char));
+	memset(filePath, 0, filePathSize);
+	strncpy(filePath, vhost->path_root, strlen(vhost->path_root));
+	strcat(filePath, address + usernameLen + 1);
+
+	printf("%s\n", filePath);
+
+	int fd = open(filePath, O_RDONLY);
+	free(filePath);
+	herr(fd, "open");
+
+	char buff[256];
 	memset(buff, 0, sizeof(buff));
 	while (read(fd, buff, 256)) {
 		write(fd_client, buff, strlen(buff));
@@ -53,6 +86,13 @@ int main(int argc, char* argv[]) {
 	 * Accept connection on the socket
 	 */
 
+	struct se_vhost vhosts[1] = {
+	{
+		.username = "hello",
+		.path_root = ".",
+		.path_error = NULL,
+	} };
+
 	struct sockaddr_in sa_client;
 	socklen_t sa_client_size = sizeof(struct sockaddr_in);
 	int fd_client;
@@ -64,7 +104,7 @@ int main(int argc, char* argv[]) {
 
 		if (fp == 0) {
 			close(fd_socket);
-			on_connection(fd_client);
+			on_connection(fd_client, vhosts, 1);
 			close(fd_client);
 			return 0;
 		}

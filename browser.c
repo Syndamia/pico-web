@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
 
 	herr(connect(fd_socket, (struct sockaddr*)&sa_server, sizeof(struct sockaddr_in)), "connect");
 
-	char msg[] = "test.txt";
-	write(fd_socket, msg, sizeof(msg));
+	/* char msg[] = "hello@/test.txt"; */
+	write(fd_socket, argv[1], strlen(argv[1]));
 
 	char buff[256];
 	memset(buff, 0, sizeof(buff));
