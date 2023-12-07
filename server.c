@@ -11,28 +11,33 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/select.h>
 
 #include <string.h>
 #include <sds/sds.h>
 #include <util.h>
 
-
-sds constructFilePath(const sds root, const char* file) {
-	sds path = sdsdup(root);
-	if (root[sdslen(root)-1] != '/' && file[0] != '/')
-		path = sdscat(path, "/");
-	path = sdscat(path, file);
-	if (file[strlen(file)-1] == '/')
-		path = sdscat(path, "index.md");
-	return path;
-}
-
+#define MAX_LEN_COMMAND 16
+#define COMMAND_FORMAT ": %16s"
 
 void freeVhosts(sds **vhosts, int argc) {
 	for (int i = 1; i < argc; i++) {
 		sdsfreesplitres(vhosts[i-1], 3);
 	}
 	free(vhosts);
+	printf("freed\n");
+}
+
+int streq(const char* first, const char* second) {
+	return strcmp(first, second) == 0;
+}
+
+int acceptConnections = 1;
+
+void handler_refuseConnections(int signum) {
+	acceptConnections = 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -49,7 +54,7 @@ int main(int argc, char* argv[]) {
 	 * Create socket for accepting connections
 	 */
 	int fd_socket;
-	herr(fd_socket = socket(AF_INET, SOCK_STREAM, 0), "socket");
+	herr(fd_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0), "socket");
 
 	struct sockaddr_in sa_socket = {
 		.sin_family = AF_INET,
@@ -66,33 +71,105 @@ int main(int argc, char* argv[]) {
 	herr(bind(fd_socket, (struct sockaddr*)&sa_socket, sizeof(struct sockaddr_in)), "bind");
 
 	herr(listen(fd_socket, 50), "listen");
+	
+	printf("Listening on %s:%s\n", "127.0.0.1", "8080");
 
 	/*
 	 * Accept connection on the socket
 	 */
 
-	struct sockaddr_in sa_client;
+	struct sockaddr_in sa_client = {
+		.sin_family = AF_INET,
+		.sin_port = 0,
+		.sin_addr.s_addr = 0,
+	};
 	socklen_t sa_client_size = sizeof(struct sockaddr_in);
-	int fd_client;
-	int count = 0;
-	while (count < 5) {
-		herr(fd_client = accept(fd_socket, (struct sockaddr*)&sa_client, &sa_client_size), "accept");
-		char* strAddr = inet_ntoa(sa_client.sin_addr);
-		count++;
 
-		int fp = fork();
-		if (fp == 0) {
-			close(fd_socket);
-			on_connection(strAddr, fd_client, vhosts, argc - 1);
+	int pid_connections = fork();
+	if (pid_connections == 0) {
+		signal(SIGTERM, handler_refuseConnections);
+
+		fd_set rfds;
+		struct timespec tv = {
+			.tv_sec = 0,
+			.tv_nsec = 100000,
+		};
+
+		int fd_client;
+		int count = 0;
+		int pselectStat = 0;
+
+		while (acceptConnections) {
+			FD_ZERO(&rfds);
+			FD_SET(fd_socket, &rfds);
+
+			herrc(pselect(fd_socket + 1, &rfds, NULL, NULL, &tv, NULL), "pselect");
+			if (!FD_ISSET(fd_socket, &rfds)) continue;
+
+			fd_client = accept(fd_socket, (struct sockaddr*)&sa_client, &sa_client_size);
+			herrc(fd_client, "accept");
+
+			char* strAddr = inet_ntoa(sa_client.sin_addr);
+			count++;
+
+			int fp = fork();
+			if (fp == 0) {
+				close(fd_socket);
+				on_connection(strAddr, fd_client, vhosts, argc - 1);
+				close(fd_client);
+				freeVhosts(vhosts, argc);
+				return 0;
+			}
 			close(fd_client);
-			freeVhosts(vhosts, argc);
-			return 0;
 		}
-		close(fd_client);
+
+		while(wait(NULL) > 0);
+		freeVhosts(vhosts, argc);
+		close(fd_socket);
+
+		return 0;
 	}
+
+	/*
+	 * Server command-line interface
+	 */
+
 	close(fd_socket);
 
-	printf("Exiting");
+	char line[256];
+	fgets(line, 256, stdin);
+
+	char name[MAX_LEN_COMMAND+1];
+	int argsAssigned = sscanf(line, COMMAND_FORMAT, name);
+	while (name[0] != 'q' && name[0] != 'e' && !streq(name, "quit") && !streq(name, "exit")) {
+		if (argsAssigned < 1) {
+			printf("Bad command syntax!\n");
+		}
+		else if (streq(name, "vhosts")) {
+			for (int i = 1; i < argc; i++) {
+				printf("Name: \"%s\" Root dir: \"%s\" Error file: \"%s\"\n",
+				        vhosts[i-1][vh_user],
+				        vhosts[i-1][vh_path],
+				        vhosts[i-1][vh_error]);
+			}
+		}
+		else if (streq(name, "help")) {
+			printf("help\tPrints this message\nvhosts\tPrints all registered virtual hosts\n");
+		}
+		else {
+			printf("Unknown command %s!\n", name);
+		}
+
+		fgets(line, 256, stdin);
+		argsAssigned = sscanf(line, COMMAND_FORMAT, name);
+	}
+
+	/*
+	 * Upon termination
+	 */
+
+	printf("Exiting...\n");
+	kill(pid_connections, SIGTERM);
 	while(wait(NULL) > 0);
 
 	freeVhosts(vhosts, argc);
