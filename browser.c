@@ -10,25 +10,16 @@
 #include <util.h>
 
 int main(int argc, char* argv[]) {
-	int fd_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd_socket < 0) {
-		perror("socket");
-		return 1;
-	}
+	int fd_socket;
+	herr(fd_socket = socket(AF_INET, SOCK_STREAM, 0), "socket");
 
 	struct sockaddr_in sa_server = {
 		.sin_family = AF_INET,
 		.sin_port = inet_atop("8080"),
 	};
-	if (inet_aton("127.0.0.1", &sa_server.sin_addr.s_addr) < 0) {
-		perror("inet_aton");
-		return 2;
-	}
+	herr(inet_aton("127.0.0.1", &sa_server.sin_addr.s_addr), "inet_aton");
 
-	if (connect(fd_socket, (struct sockaddr*)&sa_server, sizeof(struct sockaddr_in)) < 0) {
-		perror("connect");
-		return 3;
-	}
+	herr(connect(fd_socket, (struct sockaddr*)&sa_server, sizeof(struct sockaddr_in)), "connect");
 
 	char msg[] = "Hello from browser";
 	write(fd_socket, msg, sizeof(msg));
