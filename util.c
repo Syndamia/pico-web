@@ -147,3 +147,7 @@ int digits(int num) {
 	//        2147483647 (2^31-1) is max value of int
 	return 10;
 }
+
+int streq(const char* first, const char* second) {
+	return strcmp(first, second) == 0;
+}

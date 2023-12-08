@@ -3,7 +3,7 @@ all: server browser
 
 .PHONY: server
 server:
-	gcc -g -o server -I. sds/sds.c util.c server.c server-connection.c
+	gcc -g -o server -I. sds/sds.c util.c server.c server-connection.c server-cli.c
 
 .PHONY: browser
 browser:
