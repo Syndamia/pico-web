@@ -7,8 +7,14 @@
 #include <errno.h>
 #include <regex.h>
 
-uint16_t inet_atop(const char *port) {
+uint16_t atop(const char *port) {
 	return htons(atoi(port));
+}
+
+struct in_addr aton(const char* cp, int* output) {
+	struct in_addr inp;
+	*output = inet_aton(cp, &inp);
+	return inp;
 }
 
 void herrc(int output, const char* funcName) {
