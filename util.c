@@ -7,6 +7,10 @@
 #include <errno.h>
 #include <regex.h>
 
+/*
+ * Networking
+ */
+
 uint16_t atop(const char *port) {
 	return htons(atoi(port));
 }
@@ -16,6 +20,10 @@ struct in_addr aton(const char* cp, int* output) {
 	*output = inet_aton(cp, &inp);
 	return inp;
 }
+
+/*
+ * Error handling
+ */
 
 void herrc(int output, const char* funcName) {
 	if (output < 0 && errno != EINTR) {
@@ -29,6 +37,10 @@ void herr(int output, const char* funcName) {
 		exit(errno);
 	}
 }
+
+/*
+ * sds string substitution
+ */
 
 sds getMatch(const sds str, const regmatch_t match) {
 	return sdsnewlen(str + match.rm_so, match.rm_eo - match.rm_so);
@@ -73,18 +85,23 @@ sds gsub_getm(sds str, const regex_t *regex, const char* repl, int* *matches, in
 	size_t replLen = strlen(repl);
 
 	sds ret = sdsempty();
+	/*
+	 * Substitute all occurences of regex with repl in str
+	 */
 	// sdslen is in O(1) time
 	while (strInd < sdslen(str)) {
-		/* If no matches were found, cat the entire string and stop trying */
+		/* Run regex */
 		if (regexec(regex, MATCHSTART, 10, pmatch, 0) != 0) {
+			/* If there are no matches, return the rest of the string as-is */
 			ret = sdscat(ret, MATCHSTART);
 			break;
 		}
 
-		/* Cat everything before the match */
+		/* Store everything before the match as-is */
 		ret = sdscatlen(ret, MATCHSTART, pmatch[0].rm_so);
 
-		/* Cat repl in place of the match */
+		/* Replace match with repl
+		 * repl can include matched subexpressions */
 		for(size_t i = 0; i < replLen; i++) {
 			if (repl[i] <= '\10') {
 			if (pmatch[repl[i] % 10].rm_so > -1)
@@ -94,7 +111,7 @@ sds gsub_getm(sds str, const regex_t *regex, const char* repl, int* *matches, in
 				ret = sdscatlen(ret, &repl[i], 1);
 		}
 
-		/* Add current match to matches array */
+		/* Add index of current match to matches */
 		if (matchesCount != NULL) {
 			pushBackMatch(matches, matchesCount, &matchesSize, strInd + pmatch[0].rm_so);
 		}
@@ -110,6 +127,10 @@ sds gsub_getm(sds str, const regex_t *regex, const char* repl, int* *matches, in
 sds gsub(sds str, const regex_t* regex, const char* repl) {
 	return gsub_getm(str, regex, repl, NULL, NULL);
 }
+
+/*
+ * other
+ */
 
 int digits(int num) {
 	if (num < 0) num *= -1;
