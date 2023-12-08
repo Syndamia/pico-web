@@ -122,25 +122,31 @@ int main(int argc, char* argv[]) {
 		 */
 
 		page = get_page("127.0.0.1", "8080", address);
-
-		free(anchorIndecies);
-		anchorCount = 0;
 		renderPage(page, &md, &anchorIndecies, &anchorCount);
 
 		/*
 		 * Handle user input
 		 */
+
 		scanf("%d", &gotoIndex);
 
-		sdsfree(address);
-		char* newplace = strchr(page + anchorIndecies[gotoIndex], '(') + 1;
-		address = sdscatlen(sdsnew(argv[1]), newplace, strchr(newplace, ')') - newplace);
+		if (gotoIndex < anchorCount) {
+			char* newplace = strchr(page + anchorIndecies[gotoIndex], '(') + 1;
+			sdsfree(address);
+			address = sdscatlen(sdsnew(argv[1]), newplace, strchr(newplace, ')') - newplace);
 
+			free(anchorIndecies);
+			anchorCount = 0;
+		}
+		else {
+			printf("error\n");
+		}
+
+		sdsfree(page);
 		count++;
 	}
 
 	regfree(&md.anchor);
-	sdsfree(page);
-	sdsfree(address);
 	free(anchorIndecies);
+	sdsfree(address);
 }

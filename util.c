@@ -104,8 +104,11 @@ sds gsub_getm(sds str, const regex_t *regex, const char* repl, int* *matches, in
 		 * repl can include matched subexpressions */
 		for(size_t i = 0; i < replLen; i++) {
 			if (repl[i] <= '\10') {
-			if (pmatch[repl[i] % 10].rm_so > -1)
-				ret = sdscatsds(ret, getMatch(MATCHSTART, pmatch[repl[i] % 10]));
+				if (pmatch[repl[i] % 10].rm_so > -1) {
+					sds match = getMatch(MATCHSTART, pmatch[repl[i] % 10]);
+					ret = sdscatsds(ret, match);
+					sdsfree(match);
+				}
 			}
 			else
 				ret = sdscatlen(ret, &repl[i], 1);
