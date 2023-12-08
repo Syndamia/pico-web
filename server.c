@@ -112,6 +112,7 @@ int main(int argc, char* argv[]) {
 			/* If so, accept the connection and pass execution to the "main" logic */
 			fd_client = accept(fd_socket, (struct sockaddr*)&sa_client, &sa_client_size);
 			herrc(fd_client, "accept");
+			if (fd_client < 0) continue;
 
 			char* strAddr = inet_ntoa(sa_client.sin_addr);
 			count++;
