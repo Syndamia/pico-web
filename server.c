@@ -46,7 +46,7 @@ int createCommunicationSocket(const char* ip, const char* port) {
 }
 
 void freeVhosts(sds **vhosts, int vhostsc) {
-	for (int i = 1; i < vhostsc; i++) {
+	for (int i = 0; i < vhostsc; i++) {
 		sdsfreesplitres(vhosts[i], 3);
 	}
 	free(vhosts);
@@ -63,9 +63,10 @@ int main(int argc, char* argv[]) {
 	 * Get hosts
 	 */
 
-	sds **vhosts = malloc((argc - 1) * sizeof(sds*));
-	for (int i = 1, temp = 0; i < argc; i++) {
-		vhosts[i-1] = sdssplitlen(argv[i], strlen(argv[i]), ",", 1, &temp);
+	int vhostsc = argc - 1;
+	sds **vhosts = malloc(vhostsc * sizeof(sds*));
+	for (int i = 0, temp = 0; i < vhostsc; i++) {
+		vhosts[i] = sdssplitlen(argv[i+1], strlen(argv[i+1]), ",", 1, &temp);
 	}
 	
 	/*
@@ -82,8 +83,8 @@ int main(int argc, char* argv[]) {
 	int pid_cli = fork();
 	if (pid_cli == 0) {
 		close(fd_socket);
-		handleCLI(vhosts, argc-1);
-		freeVhosts(vhosts, argc);
+		handleCLI(vhosts, vhostsc);
+		freeVhosts(vhosts, vhostsc);
 		//while(wait(NULL) > 0);
 		return 0;
 	}
@@ -150,13 +151,13 @@ int main(int argc, char* argv[]) {
 			close(fd_socket);
 			on_connection(strAddr, fd_client, vhosts, argc - 1);
 			close(fd_client);
-			freeVhosts(vhosts, argc);
+			freeVhosts(vhosts, vhostsc);
 			return 0;
 		}
 		close(fd_client);
 	}
 
 	while(wait(NULL) > 0);
-	freeVhosts(vhosts, argc - 1);
+	freeVhosts(vhosts, vhostsc);
 	close(fd_socket);
 }
