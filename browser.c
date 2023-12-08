@@ -8,7 +8,27 @@
 #include <stdio.h>
 
 #include <string.h>
+#include <sds/sds.h>
 #include <util.h>
+
+sds get_page(const int fd_socket) {
+	sds page = sdsempty();
+
+	char buff[512];
+	memset(buff, 0, 512);
+	while (read(fd_socket, buff, 512)) {
+		page = sdscat(page, buff);
+		memset(buff, 0, 512);
+	}
+
+	return page;
+}
+
+void renderPage(const sds page) {
+	sds toPrint = gsub(page, "\\*[^*]*\\*", "emph");
+	write(1, toPrint, sdslen(toPrint));
+	sdsfree(toPrint);
+}
 
 int main(int argc, char* argv[]) {
 	int fd_socket;
@@ -25,13 +45,9 @@ int main(int argc, char* argv[]) {
 	/* char msg[] = "hello@/test.txt"; */
 	write(fd_socket, argv[1], strlen(argv[1]));
 
-	char buff[256];
-	memset(buff, 0, sizeof(buff));
-	while (read(fd_socket, buff, 256)) {
-		write(1, buff, strlen(buff));
-		memset(buff, 0, sizeof(buff));
-	}
-	read(fd_socket, buff, 256);
+	sds page = get_page(fd_socket);
+	renderPage(page);
+	sdsfree(page);
 
 	close(fd_socket);
 }
