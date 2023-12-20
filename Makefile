@@ -7,4 +7,4 @@ server:
 
 .PHONY: browser
 browser:
-	gcc -g -o browser -I. sds/sds.c util.c browser.c browser-stdio.c
+	gcc -g -o browser -I. sds/sds.c util.c browser.c browser-cli.c

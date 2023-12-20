@@ -11,7 +11,7 @@
 #include <string.h>
 #include <sds/sds.h>
 #include <util.h>
-#include <browser-stdio.h>
+#include <browser-cli.h>
 
 #define READ_BUFFER_SIZE 512
 

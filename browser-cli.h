@@ -1,5 +1,5 @@
-#ifndef BROWSER_STDIO
-#define BROWSER_STDIO
+#ifndef BROWSER_CLI
+#define BROWSER_CLI
 
 #include <sds/sds.h>
 
