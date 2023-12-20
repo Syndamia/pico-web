@@ -63,6 +63,11 @@ struct md_syntax {
 };
 
 void renderPage(const sds page, const struct md_syntax* syntax, int* *matches, int *matchesCount) {
+	if (sdslen(page) == 0) {
+		printf("Server didn't return page!\n");
+		return;
+	}
+
 	sds toPrint = sdsdup(page);
 	
 	/*
