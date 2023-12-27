@@ -76,7 +76,25 @@ void renderPage(const sds page) {
 #define MAX_LEN_COMMAND 16
 #define COMMAND_FORMAT ": %16s"
 
-int handleCLI(sds authority, sds *address, const sds page) {
+int portLen(char* start) {
+	int count = 0;
+	while ('0' <= *start && *start <= '9') {
+		count++;
+		start++;
+	}
+	return count;
+}
+
+int hostLen(char* start) {
+	int count = 0;
+	while (*start == '.' || ('0' <= *start && *start <= '9')) {
+		count++;
+		start++;
+	}
+	return count;
+}
+
+int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
 	// Get a line
 	char line[1024];
 	fgets(line, 1024, stdin);
@@ -90,7 +108,7 @@ int handleCLI(sds authority, sds *address, const sds page) {
 	// Number or URL
 	if (line[0] != ':') {
 		// Index of anchor
-		if (strchr(line, '/') == NULL) {
+		if (strchr(line, '@') == NULL) {
 			int gotoIndex = 0;
 			sscanf(line, "%d", &gotoIndex);
 
@@ -99,15 +117,28 @@ int handleCLI(sds authority, sds *address, const sds page) {
 				return 0;
 			}
 
-			char* newplace = strchr(page + anchorsIndecies[gotoIndex], '(') + 1;
-			sdsfree(*address);
-			*address = sdscatlen(sdsdup(authority), newplace, strchr(newplace, ')') - newplace);
+			if (*uri != NULL) sdsfree(*uri);
+			char* start = strchr(page + anchorsIndecies[gotoIndex], '(') + 1;
+			*uri = sdsnewlen(start, strchr(start, ')') - start);
 		}
 		// New address
 		else {
-			sdsfree(*address);
-			*address = sdsnewlen(line, strlen(line)-1 /* skip newline */);
+			if (*uri != NULL) sdsfree(*uri);
+			*uri = sdsnewlen(line, strlen(line)-1 /* skip newline */);
 		}
+
+		char* startPath = strchr(*uri, '/');
+		char* startHost = strchr(*uri, '@');
+		char* startPort = strchr(*uri, ':');
+		if (startHost < startPath) {
+			if (host != NULL) sdsfree(*host);
+			*host = sdsnewlen(startHost + 1, hostLen(startHost + 1));
+		}
+		if (startPort < startPath) {
+			if (port != NULL) sdsfree(*port);
+			*port = sdsnewlen(startPort + 1, portLen(startPort + 1));
+		}
+
 		return 0;
 	}
 
