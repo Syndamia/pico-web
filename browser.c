@@ -16,11 +16,13 @@
 #define READ_BUFFER_SIZE 512
 
 sds get_page(const char* ip, const char* port, const char* URL) {
+	if (streq(URL, "blank")) return sdsnew("\n");
+
 	/*
 	 * Create socket for connecting with server
 	 */
 	int fd_socket = socket(AF_INET, SOCK_STREAM, 0);
-	herr(fd_socket, "socket");
+	herrc(fd_socket, "socket");
 
 	int aton_status = 0;
 	struct sockaddr_in sa_server = {
@@ -28,13 +30,16 @@ sds get_page(const char* ip, const char* port, const char* URL) {
 		.sin_port   = atop(port),
 		.sin_addr   = aton(ip, &aton_status),
 	};
-	herr(aton_status, "inet_aton");
+	herrc(aton_status, "inet_aton");
 
 	/*
 	 * Request page
 	 */
 
-	herr(connect(fd_socket, (struct sockaddr*)&sa_server, sizeof(struct sockaddr_in)), "connect");
+	int connectStatus = connect(fd_socket, (struct sockaddr*)&sa_server, sizeof(struct sockaddr_in));
+	herrc(connectStatus, "connect");
+	if (connectStatus < 0) return sdsnew("Couldn't connect to server!\n");
+
 	write(fd_socket, URL, strlen(URL));
 
 	/*
@@ -66,8 +71,9 @@ int main(int argc, char* argv[]) {
 	 */
 
 	sds page;
-	sds authority = sdsnew(argv[1]);
-	sds address = sdsdup(authority);
+	sds host = sdsnew("127.0.0.1");
+	sds port = sdsnew("8080");
+	sds uri  = sdsnew("blank");
 
 	int stopProgram = 0;
 	while (!stopProgram) {
@@ -75,18 +81,20 @@ int main(int argc, char* argv[]) {
 		 * Get the page
 		 */
 
-		printf("\033[30;107m%s\033[0m\n", address);
-		page = get_page("127.0.0.1", "8080", address);
+		printf("\033[30;107m%s\033[0m\n", uri);
+		page = get_page(host, port, uri);
 		renderPage(page);
 
 		/*
 		 * Handle user input
 		 */
-		stopProgram = handleCLI(authority, &address, page);
+		stopProgram = handleCLI(&host, &port, &uri, page);
+		printf("%s %s %s\n", host, port, uri);
 		sdsfree(page);
 	}
 
 	freeRendering();
-	sdsfree(address);
-	sdsfree(authority);
+	sdsfree(host);
+	sdsfree(port);
+	sdsfree(uri);
 }
