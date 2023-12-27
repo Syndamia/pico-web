@@ -22,5 +22,6 @@ sds gsub_getm(sds str, const regex_t *regex, const char* repl, int* *matches, in
 #define clear_arr(arr) memset(arr, 0, sizeof(arr)/sizeof(*arr))
 int digits(int num);
 int streq(const char* first, const char* second);
+void shiftLeft(char* str, size_t size, size_t shift);
 
 #endif

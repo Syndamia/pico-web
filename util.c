@@ -154,3 +154,10 @@ int digits(int num) {
 int streq(const char* first, const char* second) {
 	return strcmp(first, second) == 0;
 }
+
+void shiftLeft(char* str, size_t size, size_t shift) {
+	while (*(str + shift - 1) != '\0') {
+		*str = *(str + shift);
+		str++;
+	}
+}

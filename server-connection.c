@@ -5,6 +5,7 @@
 #include <fcntl.h>
 
 #include <string.h>
+#include <util.h>
 
 sds constructFilePath(const sds root, const char* file) {
 	sds path = sdsdup(root);
@@ -16,6 +17,28 @@ sds constructFilePath(const sds root, const char* file) {
 	return path;
 }
 
+void sanitizeAddress(char* address) {
+	/* Remove host and port */
+	char* startPath = strchr(address, '/');
+	if (startPath == NULL)
+		startPath = strchr(address, '\0');
+
+	char* startHost = strchr(address, '@');
+	shiftLeft(startHost + 1, address - startHost, startPath - startHost - 1);
+
+	/* Remove ../ */
+	for (char* prev = startHost+1, *i = startHost+1; i != NULL && *i != '\0';) {
+		if (i[1] == '.' && i[2] == '.' && i[3] == '/') {
+			shiftLeft(prev, strlen(prev), i - prev + 3);
+			i = prev;
+		}
+		else {
+			prev = i;
+			i = strchr(i+1, '/');
+		}
+	}
+}
+
 void on_connection(const char* client, const int fd_client, sds **vhosts, const int vhostsc) {
 	printf("[%s@%d] Connected successfully!\n", client, fd_client);
 
@@ -24,6 +47,7 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	memset(address, 0, 256);
 
 	read(fd_client, address, 256);
+	sanitizeAddress(address);
 	printf("[%s@%d] Requested %s\n", client, fd_client, address);
 
 	/* Does vhosts contain an address with the username? */
