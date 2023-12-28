@@ -50,7 +50,7 @@ void renderPage(const sds page) {
 		anchorsCount = 0;
 		anchorsIndecies = NULL;
 	}
-	toPrint = gsub_getm(toPrint, &syntax.anchor, "\033[4m\1\033[0m\16", &anchorsIndecies, &anchorsCount);
+	toPrint = gsub_getm(toPrint, &syntax.anchor, "\16\033[4m\1\033[0m", &anchorsIndecies, &anchorsCount);
 	
 	sds newPrint;
 	for (int i = 0, anchorInd = 0; i < anchorsCount; i++) {
