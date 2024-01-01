@@ -60,21 +60,38 @@ void handler_refuseConnections(int signum) {
 
 int main(int argc, char* argv[]) {
 	/*
+	 * Get server parameters
+	 */
+
+	sds host = sdsnew("127.0.0.1");
+	sds port = sdsnew("8080");
+
+	int argvOffset = 1;
+	if (charCount(argv[1], ',') == 1) {
+		argvOffset++;
+		char* sep = strchr(argv[1], ',');
+		sdsfree(host);
+		host = sdsnewlen(argv[1], sep - argv[1]);
+		sdsfree(port);
+		port = sdsnew(sep + 1);
+	}
+
+	/*
 	 * Get hosts
 	 */
 
-	int vhostsc = argc - 1;
+	int vhostsc = argc - argvOffset;
 	sds **vhosts = malloc(vhostsc * sizeof(sds*));
 	for (int i = 0, temp = 0; i < vhostsc; i++) {
-		vhosts[i] = sdssplitlen(argv[i+1], strlen(argv[i+1]), ",", 1, &temp);
+		vhosts[i] = sdssplitlen(argv[i+argvOffset], strlen(argv[i+argvOffset]), ",", 1, &temp);
 	}
 	
 	/*
 	 * Create socket for accepting connections
 	 */
 	
-	int fd_socket = createCommunicationSocket("127.0.0.1", "8080");
-	printf("Listening on %s:%s\n", "127.0.0.1", "8080");
+	int fd_socket = createCommunicationSocket(host, port);
+	printf("Listening on %s:%s\n", host, port);
 
 	/*
 	 * Server command-line interface

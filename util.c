@@ -169,3 +169,12 @@ int isNumber(char* str) {
 	}
 	return 1;
 }
+
+int charCount(char* str, char cmp) {
+	int count = 0;
+	while (*str != '\0') {
+		count += *str == cmp;
+		str++;
+	}
+	return count;
+}

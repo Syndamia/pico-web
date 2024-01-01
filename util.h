@@ -24,5 +24,6 @@ int digits(int num);
 int streq(const char* first, const char* second);
 void shiftLeft(char* str, size_t size, size_t shift);
 int isNumber(char* str);
+int charCount(char* str, char cmp);
 
 #endif
