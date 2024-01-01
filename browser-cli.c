@@ -151,13 +151,13 @@ int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
 		char* startPort = strchr(newURI, ':');
 
 		// Update host
-		if (startHost < startPath) {
+		if (startHost != NULL && startHost < startPath) {
 			if (host != NULL) sdsfree(*host);
 			*host = sdsnewlen(startHost + 1, hostLen(startHost + 1));
 		}
 
 		// Update port
-		if (startPort < startPath) {
+		if (startPort != NULL && startPort < startPath) {
 			if (port != NULL) sdsfree(*port);
 			*port = sdsnewlen(startPort + 1, portLen(startPort + 1));
 		}
