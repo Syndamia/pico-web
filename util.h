@@ -23,5 +23,6 @@ sds gsub_getm(sds str, const regex_t *regex, const char* repl, int* *matches, in
 int digits(int num);
 int streq(const char* first, const char* second);
 void shiftLeft(char* str, size_t size, size_t shift);
+int isNumber(char* str);
 
 #endif

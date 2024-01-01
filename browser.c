@@ -89,7 +89,6 @@ int main(int argc, char* argv[]) {
 		 * Handle user input
 		 */
 		stopProgram = handleCLI(&host, &port, &uri, page);
-		printf("%s %s %s\n", host, port, uri);
 		sdsfree(page);
 	}
 

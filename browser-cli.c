@@ -94,6 +94,15 @@ int hostLen(char* start) {
 	return count;
 }
 
+char* findBeginningOfPath(char* uri) {
+	char* startPath = strchr(uri, '/');
+	while (startPath != uri && startPath != NULL) {
+		if (*(startPath - 1) == '.') startPath--;
+		else break;
+	}
+	return startPath;
+}
+
 int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
 	// Get a line
 	char line[1024];
@@ -107,8 +116,10 @@ int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
 
 	// Number or URL
 	if (line[0] != ':') {
+		sds newURI;
+
 		// Index of anchor
-		if (strchr(line, '@') == NULL) {
+		if (isNumber(line)) {
 			int gotoIndex = 0;
 			sscanf(line, "%d", &gotoIndex);
 
@@ -117,23 +128,35 @@ int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
 				return 0;
 			}
 
-			if (*uri != NULL) sdsfree(*uri);
 			char* start = strchr(page + anchorsIndecies[gotoIndex], '(') + 1;
-			*uri = sdsnewlen(start, strchr(start, ')') - start);
+			newURI = sdsnewlen(start, strchr(start, ')') - start);
 		}
 		// New address
 		else {
-			if (*uri != NULL) sdsfree(*uri);
-			*uri = sdsnewlen(line, strlen(line)-1 /* skip newline */);
+			newURI = sdsnewlen(line, strlen(line)-1); // skip newline
 		}
 
-		char* startPath = strchr(*uri, '/');
-		char* startHost = strchr(*uri, '@');
-		char* startPort = strchr(*uri, ':');
+		char* startPath = findBeginningOfPath(newURI);
+
+		// Handle relative URLs
+		if (startPath == newURI) {
+			newURI = sdscatsds(sdsnewlen(*uri, findBeginningOfPath(*uri) - *uri), newURI);
+			startPath = findBeginningOfPath(newURI);
+		}
+
+		if (*uri != NULL) sdsfree(*uri);
+		*uri = newURI;
+
+		char* startHost = strchr(newURI, '@');
+		char* startPort = strchr(newURI, ':');
+
+		// Update host
 		if (startHost < startPath) {
 			if (host != NULL) sdsfree(*host);
 			*host = sdsnewlen(startHost + 1, hostLen(startHost + 1));
 		}
+
+		// Update port
 		if (startPort < startPath) {
 			if (port != NULL) sdsfree(*port);
 			*port = sdsnewlen(startPort + 1, portLen(startPort + 1));

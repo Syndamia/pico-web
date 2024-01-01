@@ -161,3 +161,11 @@ void shiftLeft(char* str, size_t size, size_t shift) {
 		str++;
 	}
 }
+
+int isNumber(char* str) {
+	while (*str >= ' ') {
+		if (*str < '0' || *str > '9') return 0;
+		str++;
+	}
+	return 1;
+}
