@@ -102,7 +102,8 @@ int main(int argc, char* argv[]) {
 		close(fd_socket);
 		handleCLI(vhosts, vhostsc);
 		freeVhosts(vhosts, vhostsc);
-		//while(wait(NULL) > 0);
+		sdsfree(host);
+		sdsfree(port);
 		return 0;
 	}
 
@@ -169,6 +170,8 @@ int main(int argc, char* argv[]) {
 			on_connection(strAddr, fd_client, vhosts, argc - 1);
 			close(fd_client);
 			freeVhosts(vhosts, vhostsc);
+			sdsfree(host);
+			sdsfree(port);
 			return 0;
 		}
 		close(fd_client);
@@ -177,4 +180,6 @@ int main(int argc, char* argv[]) {
 	while(wait(NULL) > 0);
 	freeVhosts(vhosts, vhostsc);
 	close(fd_socket);
+	sdsfree(host);
+	sdsfree(port);
 }

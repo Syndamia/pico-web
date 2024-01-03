@@ -140,7 +140,9 @@ int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
 
 		// Handle relative URLs
 		if (startPath == newURI) {
-			newURI = sdscatsds(sdsnewlen(*uri, findBeginningOfPath(*uri) - *uri), newURI);
+			sds beforePath = sdscatsds(sdsnewlen(*uri, findBeginningOfPath(*uri) - *uri), newURI);
+			sdsfree(newURI);
+			newURI = beforePath;
 			startPath = findBeginningOfPath(newURI);
 		}
 
