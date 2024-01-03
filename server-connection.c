@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include <string.h>
 #include <util.h>
@@ -39,6 +40,18 @@ void sanitizeAddress(char* address) {
 	}
 }
 
+int openError(sds* filePath, int* fd, const sds* vhost, const char* client, const int fd_client) {
+	sdsfree(*filePath);
+	*filePath = constructFilePath(vhost[vh_path], vhost[vh_error]);
+	*fd = open(*filePath, O_RDONLY);
+	if (*fd < 0) {
+		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, *filePath);
+		sdsfree(*filePath);
+		return 1;
+	}
+	return 0;
+}
+
 void on_connection(const char* client, const int fd_client, sds **vhosts, const int vhostsc) {
 	printf("[%s@%d] Connected successfully!\n", client, fd_client);
 
@@ -69,18 +82,30 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	/* Try to open the requested file or the error file */
 	sds filePath = constructFilePath(vhost[vh_path], address + usernameLen + 1);
 
-	int fd = open(filePath, O_RDONLY);
+	int fd = 0;
+
+	/* Check if file is directory */
+	struct stat buf;
+	if (stat(filePath, &buf) == 0) {
+		if (S_ISDIR(buf.st_mode)) {
+			filePath = sdscat(filePath, "/index.md");
+		}
+		else if (!(S_ISREG(buf.st_mode))) {
+			fprintf(stderr, "[%s@%d] %s is not a regular file!\n", client, fd_client, filePath);
+
+			if (openError(&filePath, &fd, vhost, client, fd_client))
+				return;
+		}
+	}
+
+	if (fd <= 0)
+		fd = open(filePath, O_RDONLY);
+
 	if (fd < 0) {
 		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, filePath);
 
-		sdsfree(filePath);
-		filePath = constructFilePath(vhost[vh_path], vhost[vh_error]);
-		fd = open(filePath, O_RDONLY);
-		if (fd < 0) {
-			fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, filePath);
-			sdsfree(filePath);
+		if (openError(&filePath, &fd, vhost, client, fd_client))
 			return;
-		}
 	}
 
 	/* Send the file to the client */
