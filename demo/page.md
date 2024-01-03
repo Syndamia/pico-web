@@ -1,0 +1,3 @@
+<< Page >>
+
+Go to: [Index](/)
