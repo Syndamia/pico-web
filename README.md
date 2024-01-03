@@ -65,22 +65,108 @@ When running you'll see logs, related to all connections with the server.
 You can also type commands, similarly to [browser](#browser), the first character on the line must be `:`, followed immediately by the command name.
 There are currently 3 distinct commands:
 
-- `help`, which prints out all available commands
+- `help`, `h` and `?`, which print all available commands
 - `vhosts`, which prints out all shared folders, alongside their associated userinfo and error file
-- `quit`, `q`, `exit`, `e`, which exits out of the program
+- `quit`, `q`, `exit` and `e`, which exit out of the program
 
 ### Demo
 
 This project comes with a tiny assortment of pages.
-This is a sample input and output of both programs, showing all of their capabilities (browser does add some special coloring in terminals, which can't be shown in this file), where shell commands are prepended with `$ `:
+This is a sample input and output of both programs, showing all of their capabilities (browser does add some special coloring in terminals, which can't be shown in this file), where shell commands are prepended with `$ ` and user input with `> `:
 
 ```sh
 $ ./server '127.0.0.1,8081` `demo,./demo,./demo/page.md`
+Listening on 127.0.0.1:8081
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/
+[127.0.0.1@4] Serving ./demo/index.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/page.md
+[127.0.0.1@4] Serving ./demo/page.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/
+[127.0.0.1@4] Serving ./demo/index.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/dir
+[127.0.0.1@4] Serving ./demo/dir/index.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/dir/page.md
+[127.0.0.1@4] Serving ./demo/dir/page.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/page.md
+[127.0.0.1@4] Serving ./demo/page.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/
+[127.0.0.1@4] Serving ./demo/index.md
+[127.0.0.1@4] Served!
+[127.0.0.1@4] Connected successfully!
+[127.0.0.1@4] Requested demo@/dira
+[127.0.0.1@4] Error opening ./demo/dira
+[127.0.0.1@4] Serving ./demo/page.md
+[127.0.0.1@4] Served!
+> :help
+help,h,?    Prints this message
+vhosts      Prints all registered virtual hosts
+quit,exit,q,e   Exits the program
+> :vhosts
+Name: "demo" Root dir: "./demo" Error file: "page.md"
+> :quit
+Exiting...
 ```
 
 ```sh
 $ ./browser
+blank
 
+> demo@127.0.0.1:8081/   
+demo@127.0.0.1:8081/
+<< Index page >>
+
+Go to: 0page, 1dir
+> 0
+demo@127.0.0.1:8081/page.md
+<< Page >>
+
+Go to: 0Index
+> 0
+demo@127.0.0.1:8081/
+<< Index page >>
+
+Go to: 0page, 1dir
+> 1
+demo@127.0.0.1:8081./dir
+[[ Index of dir ]]
+
+Go to: 0Index, 1Page
+> 1
+demo@127.0.0.1:8081/dir/page.md
+[[ Page in dir ]]
+
+Go to: 0Index
+> demo@/page.md
+demo@/page.md
+<< Page >>
+
+Go to: 0Index
+> /
+demo@/
+<< Index page >>
+
+Go to: 0page, 1dir
+> demo@127.0.0.1:8081/dira
+<< Page >>
+
+Go to: 0Index
+> blank
+blank
+
+> :quit
 ```
 
 ## Source code information
