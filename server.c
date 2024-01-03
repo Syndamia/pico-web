@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 	sds port = sdsnew("8080");
 
 	int argvOffset = 1;
-	if (charCount(argv[1], ',') == 1) {
+	if (argc > 1 && charCount(argv[1], ',') == 1) {
 		argvOffset++;
 		char* sep = strchr(argv[1], ',');
 		sdsfree(host);
