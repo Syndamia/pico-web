@@ -58,7 +58,7 @@ If the server cannot find a requested file, then the error file is returned (who
 
 *Note:* A quirk with Markdown anchors is that relative paths are always relative to the files root, not the current directory.
 
-For example, if you want to share a folder `~/Documents` on username `mynotes` with an error file `./error.md`, then the corresponding argument to `server` would be `mynotes,~/Documents,./error.md`.
+For example, if you want to share a folder `~/Documents` on username `mynotes` with an error file `./error.md` (again, this path is relative to `~/Documents`), then the corresponding argument to `server` would be `mynotes,~/Documents,./error.md`.
 
 When running you'll see logs, related to all connections with the server.
 
@@ -120,7 +120,7 @@ Name: "demo" Root dir: "./demo" Error file: "page.md"
 Exiting...
 ```
 
-```sh
+```
 $ ./browser
 blank
 
