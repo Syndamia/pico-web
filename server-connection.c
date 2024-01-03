@@ -8,49 +8,10 @@
 #include <string.h>
 #include <util.h>
 
-sds constructFilePath(const sds root, const char* file) {
-	sds path = sdsdup(root);
-	if (root[sdslen(root)-1] != '/' && file[0] != '/')
-		path = sdscat(path, "/");
-	path = sdscat(path, file);
-	if (file[strlen(file)-1] == '/')
-		path = sdscat(path, "index.md");
-	return path;
-}
-
-void sanitizeAddress(char* address) {
-	/* Remove host and port */
-	char* startPath = strchr(address, '/');
-	if (startPath == NULL)
-		startPath = strchr(address, '\0');
-
-	char* startHost = strchr(address, '@');
-	shiftLeft(startHost + 1, address - startHost, startPath - startHost - 1);
-
-	/* Remove ../ */
-	for (char* prev = startHost+1, *i = startHost+1; i != NULL && *i != '\0';) {
-		if (i[1] == '.' && i[2] == '.' && i[3] == '/') {
-			shiftLeft(prev, strlen(prev), i - prev + 3);
-			i = prev;
-		}
-		else {
-			prev = i;
-			i = strchr(i+1, '/');
-		}
-	}
-}
-
-int openError(sds* filePath, int* fd, const sds* vhost, const char* client, const int fd_client) {
-	sdsfree(*filePath);
-	*filePath = constructFilePath(vhost[vh_path], vhost[vh_error]);
-	*fd = open(*filePath, O_RDONLY);
-	if (*fd < 0) {
-		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, *filePath);
-		sdsfree(*filePath);
-		return 1;
-	}
-	return 0;
-}
+sds constructFilePath(const sds root, const char* file);
+void sanitizeAddress(char* address);
+sds* findVhost(char* address, sds** vhosts, const int vhostsc);
+int openError(sds* filePath, int* fd, const sds* vhost, const char* client, const int fd_client);
 
 void on_connection(const char* client, const int fd_client, sds **vhosts, const int vhostsc) {
 	printf("[%s@%d] Connected successfully!\n", client, fd_client);
@@ -63,24 +24,15 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	sanitizeAddress(address);
 	printf("[%s@%d] Requested %s\n", client, fd_client, address);
 
-	/* Does vhosts contain an address with the username? */
-	int usernameLen = strchr(address, '@') - address;
-
-	const sds *vhost = NULL;
-	for (int i = 0; i < vhostsc; i++) {
-		if (strncmp(vhosts[i][vh_user], address, usernameLen) == 0) {
-			vhost = *vhosts + i;
-			break;
-		}
-	}
-
+	/* Is the username connected with any file path? */
+	const sds *vhost = findVhost(address, vhosts, vhostsc);
 	if (vhost == NULL) {
 		fprintf(stderr, "[%s@%d] Unknown username in address %s\n", client, fd_client, address);
 		return;
 	}
 
 	/* Try to open the requested file or the error file */
-	sds filePath = constructFilePath(vhost[vh_path], address + usernameLen + 1);
+	sds filePath = constructFilePath(vhost[vh_path], strchr(address, '@') + 1);
 
 	int fd = 0;
 
@@ -122,4 +74,60 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	/* Finalize */
 	close(fd);
 	printf("[%s@%d] Served!\n", client, fd_client);
+}
+
+sds constructFilePath(const sds root, const char* file) {
+	sds path = sdsdup(root);
+	if (root[sdslen(root)-1] != '/' && file[0] != '/')
+		path = sdscat(path, "/");
+	path = sdscat(path, file);
+	if (file[strlen(file)-1] == '/')
+		path = sdscat(path, "index.md");
+	return path;
+}
+
+void sanitizeAddress(char* address) {
+	/* Remove host and port */
+	char* startPath = strchr(address, '/');
+	if (startPath == NULL)
+		startPath = strchr(address, '\0');
+
+	char* startHost = strchr(address, '@');
+	shiftLeft(startHost + 1, address - startHost, startPath - startHost - 1);
+
+	/* Remove ../ */
+	for (char* prev = startHost+1, *i = startHost+1; i != NULL && *i != '\0';) {
+		if (i[1] == '.' && i[2] == '.' && i[3] == '/') {
+			shiftLeft(prev, strlen(prev), i - prev + 3);
+			i = prev;
+		}
+		else {
+			prev = i;
+			i = strchr(i+1, '/');
+		}
+	}
+}
+
+sds* findVhost(char* address, sds** vhosts, const int vhostsc) {
+	sds* vhost = NULL;
+	int usernameLen = strchr(address, '@') - address;
+	for (int i = 0; i < vhostsc; i++) {
+		if (strncmp(vhosts[i][vh_user], address, usernameLen) == 0) {
+			vhost = *vhosts + i;
+			break;
+		}
+	}
+	return vhost;
+}
+
+int openError(sds* filePath, int* fd, const sds* vhost, const char* client, const int fd_client) {
+	sdsfree(*filePath);
+	*filePath = constructFilePath(vhost[vh_path], vhost[vh_error]);
+	*fd = open(*filePath, O_RDONLY);
+	if (*fd < 0) {
+		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, *filePath);
+		sdsfree(*filePath);
+		return 1;
+	}
+	return 0;
 }
