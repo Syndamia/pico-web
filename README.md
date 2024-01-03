@@ -74,7 +74,7 @@ There are currently 3 distinct commands:
 This project comes with a tiny assortment of pages.
 This is a sample input and output of both programs, showing all of their capabilities (browser does add some special coloring in terminals, which can't be shown in this file), where shell commands are prepended with `$ ` and user input with `> `:
 
-```sh
+```
 $ ./server '127.0.0.1,8081` `demo,./demo,./demo/page.md`
 Listening on 127.0.0.1:8081
 [127.0.0.1@4] Connected successfully!
