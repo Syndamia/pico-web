@@ -11,7 +11,6 @@
 sds constructFilePath(const sds root, const char* file);
 void sanitizeAddress(char* address);
 sds* findVhost(char* address, sds** vhosts, const int vhostsc);
-int openError(sds* filePath, int* fd, const sds* vhost, const char* client, const int fd_client);
 
 void on_connection(const char* client, const int fd_client, sds **vhosts, const int vhostsc) {
 	printf("[%s@%d] Connected successfully!\n", client, fd_client);
@@ -34,30 +33,41 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	/* Try to open the requested file or the error file */
 	sds filePath = constructFilePath(vhost[vh_path], strchr(address, '@') + 1);
 
-	int fd = 0;
+	int fd = -2;
 
 	/* Check if file is directory */
 	struct stat buf;
 	if (stat(filePath, &buf) == 0) {
 		if (S_ISDIR(buf.st_mode)) {
 			filePath = sdscat(filePath, "/index.md");
+			fd = 0;
 		}
-		else if (!(S_ISREG(buf.st_mode))) {
+		else if (S_ISREG(buf.st_mode)) {
+			fd = 0;
+		}
+		else {
 			fprintf(stderr, "[%s@%d] %s is not a regular file!\n", client, fd_client, filePath);
-
-			if (openError(&filePath, &fd, vhost, client, fd_client))
-				return;
 		}
+
+		if (fd == 0)
+			fd = open(filePath, O_RDONLY);
 	}
 
-	if (fd <= 0)
-		fd = open(filePath, O_RDONLY);
-
+	// Couldn't open file
 	if (fd < 0) {
 		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, filePath);
 
-		if (openError(&filePath, &fd, vhost, client, fd_client))
-			return;
+		sdsfree(filePath);
+		filePath = constructFilePath(vhost[vh_path], vhost[vh_error]);
+		if (sdslen(filePath) > 0)
+			fd = open(filePath, O_RDONLY);
+	}
+
+	// Couldn't open error file
+	if (fd < 0) {
+		fprintf(stderr, "[%s@%d] Error opening error file %s\n", client, fd_client, filePath);
+		sdsfree(filePath);
+		return;
 	}
 
 	/* Send the file to the client */
@@ -77,6 +87,9 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 }
 
 sds constructFilePath(const sds root, const char* file) {
+	if (*root == '\0' && *file == '\0')
+		return sdsempty();
+
 	sds path = sdsdup(root);
 	if (root[sdslen(root)-1] != '/' && file[0] != '/')
 		path = sdscat(path, "/");
@@ -118,16 +131,4 @@ sds* findVhost(char* address, sds** vhosts, const int vhostsc) {
 		}
 	}
 	return vhost;
-}
-
-int openError(sds* filePath, int* fd, const sds* vhost, const char* client, const int fd_client) {
-	sdsfree(*filePath);
-	*filePath = constructFilePath(vhost[vh_path], vhost[vh_error]);
-	*fd = open(*filePath, O_RDONLY);
-	if (*fd < 0) {
-		fprintf(stderr, "[%s@%d] Error opening %s\n", client, fd_client, *filePath);
-		sdsfree(*filePath);
-		return 1;
-	}
-	return 0;
 }
