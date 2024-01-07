@@ -3,9 +3,9 @@
 #include <stdio.h>
 
 #include <string.h>
-#include <sds/sds.h>
 #include <regex.h>
-#include <util.h>
+#include "sds/sds.h"
+#include "util.h"
 
 struct md_syntax {
 	regex_t anchor;
@@ -103,7 +103,7 @@ char* findBeginningOfPath(char* uri) {
 	return startPath;
 }
 
-int handleCLI(sds *host, sds *port, sds *uri, const sds page) {
+int handleBrowserCLI(sds *host, sds *port, sds *uri, const sds page) {
 	// Get a line
 	char line[1024];
 	fgets(line, 1024, stdin);
