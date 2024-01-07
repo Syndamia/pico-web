@@ -10,7 +10,7 @@ server:
 
 .PHONY: browser
 browser:
-	$(CC) $(CFLAGS) -o browser src/sds/sds.c src/util.c src/browser.c src/browser-cli.c
+	$(CC) $(CFLAGS) -o browser src/sds/sds.c src/util.c src/browser.c src/browser-net.c src/browser-cli.c
 
 .PHONY: clean
 clean:
