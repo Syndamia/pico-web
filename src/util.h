@@ -2,9 +2,9 @@
 #define H_UTIL
 
 #include <inttypes.h>
-#include <sds/sds.h>
 #include <arpa/inet.h>
 #include <regex.h>
+#include "sds/sds.h"
 
 /* Networking */
 uint16_t atop(const char *port);
