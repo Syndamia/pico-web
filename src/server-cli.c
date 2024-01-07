@@ -3,14 +3,20 @@
 #include <stdio.h>
 #include <signal.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #define MAX_LEN_COMMAND 16
 #define COMMAND_FORMAT ": %16s"
 
 void handleCLI(sds **vhosts, int vhostsc) {
+	// Is stdin available
+	
 	// Get a line
 	char line[256];
-	fgets(line, 256, stdin);
+	if (fgets(line, 256, stdin) == NULL) {
+		printf("Couldn't read from standard input! User input can not and will not be handled!\nYou'll have to manually kill the server process to shut it down!\n");
+		return;
+	}
 
 	// Get command name and it's arguments
 	// Currently no command takes arguments
