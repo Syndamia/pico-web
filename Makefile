@@ -1,3 +1,6 @@
+# Static analysis
+CC_SANA ?= clang
+CFLAGS_SANA ?= --analyze -Xclang -analyzer-output=text
 
 .PHONY: all
 all: build
@@ -13,6 +16,10 @@ build:
 .PHONY: tests
 tests:
 	cd ./tests/ && $(MAKE)
+
+.PHONY: static-analysis
+static-analysis:
+	$(CC_SANA) $(CFLAGS_SANA) ./src/*
 
 .PHONY: clean
 clean:
