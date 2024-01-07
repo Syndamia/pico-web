@@ -10,7 +10,7 @@ build:
 	$(MAKE) -C ./src build
 
 .PHONY: dev
-build:
+dev:
 	$(MAKE) -C ./src dev
 
 .PHONY: tests
