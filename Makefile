@@ -18,4 +18,5 @@ tests:
 
 .PHONY: clean
 clean:
-	rm -rf server browser
+	$(RM) server browser
+	cd ./tests/ && $(MAKE) clean
