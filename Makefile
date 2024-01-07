@@ -12,6 +12,10 @@ server:
 browser:
 	$(CC) $(CFLAGS) -o browser src/sds/sds.c src/util.c src/browser.c src/browser-net.c src/browser-cli.c
 
+.PHONY: tests
+tests:
+	cd ./tests/ && $(MAKE)
+
 .PHONY: clean
 clean:
 	rm -rf server browser
