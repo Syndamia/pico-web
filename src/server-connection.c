@@ -12,6 +12,8 @@ sds constructFilePath(const sds root, const char* file);
 void sanitizeAddress(char* address);
 sds* findVhost(char* address, sds** vhosts, const int vhostsc);
 
+#define DISCONNECT printf("[%s@%d] Disconnected\n", client, fd_client); return;
+
 void on_connection(const char* client, const int fd_client, sds **vhosts, const int vhostsc) {
 	printf("[%s@%d] Connected successfully!\n", client, fd_client);
 
@@ -27,7 +29,8 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	const sds *vhost = findVhost(address, vhosts, vhostsc);
 	if (vhost == NULL) {
 		fprintf(stderr, "[%s@%d] Unknown username in address %s\n", client, fd_client, address);
-		return;
+		printf("[%s@%d] Requested %s\n", client, fd_client, address);
+		DISCONNECT
 	}
 
 	/* Try to open the requested file or the error file */
@@ -67,7 +70,7 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	if (fd < 0) {
 		fprintf(stderr, "[%s@%d] Error opening error file %s\n", client, fd_client, filePath);
 		sdsfree(filePath);
-		return;
+		DISCONNECT
 	}
 
 	/* Send the file to the client */
@@ -84,6 +87,7 @@ void on_connection(const char* client, const int fd_client, sds **vhosts, const 
 	/* Finalize */
 	close(fd);
 	printf("[%s@%d] Served!\n", client, fd_client);
+	DISCONNECT
 }
 
 sds constructFilePath(const sds root, const char* file) {
