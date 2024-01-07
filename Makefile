@@ -15,7 +15,7 @@ build:
 
 .PHONY: tests
 tests:
-	cd ./tests/ && $(MAKE)
+	$(MAKE) -C ./tests
 
 .PHONY: static-analysis
 static-analysis:
