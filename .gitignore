@@ -4,3 +4,4 @@ server
 
 tests/*.tests
 tests/*.tests_Runner.c
+tests/mocks
