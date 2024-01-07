@@ -1,3 +1,6 @@
 [submodule "src/sds"]
 	path = src/sds
 	url = https://github.com/antirez/sds.git
+[submodule "tests/Unity"]
+	path = tests/Unity
+	url = https://github.com/ThrowTheSwitch/Unity.git
