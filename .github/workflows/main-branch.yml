@@ -1,0 +1,20 @@
+name: Push image to dockerhub
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-push:
+    name: Build the docker container image and push it to dockerhub
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-server:latest
+
