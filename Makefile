@@ -2,6 +2,10 @@
 CC_SANA ?= clang
 CFLAGS_SANA ?= --analyze -Xclang -analyzer-output=text
 
+# Security analysis
+CC_CANA ?= flawfinder
+CFLAGS_CANA ?= --error-level=3
+
 .PHONY: all
 all: build
 
@@ -20,6 +24,10 @@ tests:
 .PHONY: static-analysis
 static-analysis:
 	$(CC_SANA) $(CFLAGS_SANA) ./src/*
+
+.PHONY: security-analysis
+security-analysis:
+	$(CC_CANA) $(CFLAGS_CANA) $$(find ./src -maxdepth 1 -type f -name "*.c" -o -name "*.h")
 
 .PHONY: clean
 clean:

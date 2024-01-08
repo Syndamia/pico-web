@@ -1,7 +1,7 @@
 #ifndef H_SERVER_CONNECTION
 #define H_SERVER_CONNECTION
 
-#include <sds/sds.h>
+#include "sds/sds.h"
 
 #define vh_user  0
 #define vh_path  1
