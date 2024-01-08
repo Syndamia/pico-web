@@ -28,6 +28,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: rymndhng/release-on-push-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
           bump_version_scheme: minor
