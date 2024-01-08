@@ -27,7 +27,7 @@ static-analysis:
 
 .PHONY: security-analysis
 security-analysis:
-	$(CC_CANA) $(CFLAGS_CANA) ./src
+	$(CC_CANA) $(CFLAGS_CANA) $$(find ./src -maxdepth 1 -type f -name "*.c" -o -name "*.h")
 
 .PHONY: clean
 clean:
