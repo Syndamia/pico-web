@@ -77,7 +77,6 @@ jobs:
         with:
           name: dev-build-files
           path: ./build
-      - uses: actions/checkout@v4
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
