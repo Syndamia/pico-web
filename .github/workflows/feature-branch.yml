@@ -1,4 +1,4 @@
-name: feature-branch
+name: Tests and static analysis
 on:
   push:
     branches-ignore:
@@ -22,7 +22,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: Clone-repo
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v3
+        with:
+          name: source-code
+          path: .
       - name: Build server and browser
         run: make tests
   
@@ -30,7 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: Clone-repo
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v3
+        with:
+          name: source-code
+          path: .
       - name: Build server and browser
         run: make static-analysis
-  
