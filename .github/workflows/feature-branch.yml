@@ -26,7 +26,7 @@ jobs:
       - name: Build server and browser
         run: make tests
   
-  Static analysis:
+  Static-analysis:
     runs-on: ubuntu-latest
     needs: Clone-repo
     steps:
