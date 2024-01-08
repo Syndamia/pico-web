@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pico-web-server-deployment
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pico-web-server-pod
+  template:
+    metadata:
+      name: pico-web-server-pod
+      labels:
+        environment: production
+        app: pico-web-server-pod
+    spec:
+      initContainers:
+      - name: demo-files
+        image: alpine/git
+        args:
+          - clone
+          - https://github.com/Syndamia/pico-web.git
+      containers:
+      - name: pico-web-server-prod
+        image: syndamia/pico-web-server:latest
+        args: [ 'demo,/usr/share/demo/,page.md' ]
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: demo-ps
+          mountPath: /usr/share/demo
+      volumes:
+      - name: demo-ps
+        persistentVolumeClaim:
+          claimName: demo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pico-web-server-service
+spec:
+  type: NodePort
+  selector:
+    app: pico-web-server-pod
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-pv
+spec:
+  volumeMode: Filesystem
+  capacity:
+    storage: 50Mi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/tmp/demo" # You'll have to manually copy ./demo to here
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-pvc
+spec:
+  volumeName: demo-pv
+  storageClassName: ""
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
