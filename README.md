@@ -9,6 +9,26 @@ The userinfo section is analogous to subdomains in normal web applications.
 It's assumed that all pages are written in Markdown so the client adds special "rendering" like hyperlinks and bold text (via ANSI escape sequences).
 The server is configured to send pages only in allowed directories, and can handle multiple directories with custom error pages.
 
+## From issue to production
+
+![image](https://github.com/Syndamia/pico-web/assets/46843671/d7ae678a-e813-45c6-afa6-9acf05129e88)
+
+1. A [GitHub issue](https://github.com/Syndamia/pico-web/issues) is created when something needs to be added/changed in the project
+2. Then a developer makes the appropriate branch (which I call the "feature branch"), where they push updates to the codebase.
+   On every commit a small pipeline is ran, executing all tests and static analysis.
+3. Upon completion, a merge request is made to the `dev` branch. After the GitHub workflow is successful and a mandatory review, it will be merged.
+4. Then, on the new commit, a new workflow is started on the `dev` branch, doing again the tests and static analysis, alongside the security analysis.
+   Afterwards, the development binaries are built and the [development Docker image](https://hub.docker.com/r/syndamia/pico-web-dev) is deployed.
+5. After enough changes have accumulated, another pull request is made, from `dev` to `main` (PRs to `main` are only done from `dev`).
+   On successful workflow and mandatory review, the changes can be merged.
+6. Finally, a pipeline from the `main` branch will be ran, deploying the [production server Docker image](https://hub.docker.com/r/syndamia/pico-web-server) and creating a new GitHub release.
+
+Although there is no deployment to a managed kubernetes cluster (too expensive), a Deployment with the [demo](./demo) files is available:
+
+```bash
+kubectl apply -f demo-production-server-deployment.yaml
+```
+
 ## Building and usage
 
 Build the binaries:
