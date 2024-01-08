@@ -82,8 +82,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: actions/checkout@v4
       - uses: docker/build-push-action@v5
         with:
           push: true
+          context: .
           file: Dockerfile.dev
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-dev:latest
