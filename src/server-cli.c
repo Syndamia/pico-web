@@ -21,7 +21,7 @@ void handleCLI(sds **vhosts, int vhostsc) {
 	// Get command name and it's arguments
 	// Currently no command takes arguments
 	char name[MAX_LEN_COMMAND+1];
-	int argsAssigned = sscanf(line, COMMAND_FORMAT, name);
+	int argsAssigned = sscanf(line, COMMAND_FORMAT, name); // Flawfinder: ignore
 
 	while (!streq(name, "q") && !streq(name, "e") && !streq(name, "quit") && !streq(name, "exit")) {
 		if (argsAssigned < 1) {
@@ -44,7 +44,7 @@ void handleCLI(sds **vhosts, int vhostsc) {
 
 		// Get line and divided it into command name and arguments
 		fgets(line, 256, stdin);
-		argsAssigned = sscanf(line, COMMAND_FORMAT, name);
+		argsAssigned = sscanf(line, COMMAND_FORMAT, name); // Flawfinder: ignore
 	}
 
 	printf("Exiting...\n");

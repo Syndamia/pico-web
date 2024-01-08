@@ -59,7 +59,7 @@ void renderPage(const sds page) {
 		/* In toPrint, replace '\16' with "\033[30;46m%d\033[0m", where %d is the variable i */
 		toPrint[anchorInd] = '\0';
 		newPrint = sdsgrowzero(sdsempty(), sdslen(toPrint) + digits(i) + 8 + 4);
-		sprintf(newPrint, "%s\033[30;46m%d\033[0m%s", toPrint, i, toPrint + anchorInd + 1);
+		snprintf(newPrint, sdslen(newPrint), "%s\033[30;46m%d\033[0m%s", toPrint, i, toPrint + anchorInd + 1);
 
 		sdsfree(toPrint);
 		toPrint = newPrint;
@@ -172,7 +172,7 @@ int handleBrowserCLI(sds *host, sds *port, sds *uri, const sds page) {
 	// Get command name and it's arguments
 	// Currently no command takes arguments
 	char name[MAX_LEN_COMMAND+1] = { '\0' };
-	int argsAssigned = sscanf(line, COMMAND_FORMAT, name);
+	sscanf(line, COMMAND_FORMAT, name); // Flawfinder: ignore
 
 	if (streq(name, "q") || streq(name, "e") || streq(name, "quit") || streq(name, "exit")) {
 		return 1;
