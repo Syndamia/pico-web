@@ -1,4 +1,4 @@
-name: Tests and static analysis
+name: Tests, analysis and push to dev dockerhub
 on:
   push:
     branches:
