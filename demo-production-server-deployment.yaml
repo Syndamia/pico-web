@@ -16,12 +16,6 @@ spec:
         environment: production
         app: pico-web-server-pod
     spec:
-      initContainers:
-      - name: demo-files
-        image: alpine/git
-        args:
-          - clone
-          - https://github.com/Syndamia/pico-web.git
       containers:
       - name: pico-web-server-prod
         image: syndamia/pico-web-server:latest
