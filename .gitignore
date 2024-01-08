@@ -1,6 +1,5 @@
-browser
-server
-*.txt
+build
+src/*.gch
 
 tests/*.tests
 tests/*.tests_Runner.c
