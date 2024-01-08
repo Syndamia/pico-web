@@ -26,7 +26,7 @@ jobs:
         with:
           name: source-code
           path: .
-      - name: Build server and browser
+      - name: Run tests
         run: make tests
   
   Static-analysis:
@@ -37,5 +37,5 @@ jobs:
         with:
           name: source-code
           path: .
-      - name: Build server and browser
+      - name: Run static analysis
         run: make static-analysis
