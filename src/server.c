@@ -14,11 +14,11 @@
 #include <sys/select.h>
 
 #include <string.h>
-#include <sds/sds.h>
-#include <util.h>
+#include "sds/sds.h"
+#include "util.h"
 
-#include <server-connection.h>
-#include <server-cli.h>
+#include "server-connection.h"
+#include "server-cli.h"
 
 int createCommunicationSocket(const char* ip, const char* port) {
 	int fd_socket = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);

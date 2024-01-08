@@ -1,4 +1,4 @@
-#include <server-connection.h>
+#include "server-connection.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 
 #include <string.h>
-#include <util.h>
+#include "util.h"
 
 sds constructFilePath(const sds root, const char* file);
 void sanitizeAddress(char* address);

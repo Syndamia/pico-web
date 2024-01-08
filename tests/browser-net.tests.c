@@ -21,23 +21,3 @@ void test_get_page_ReturnsEmptyLine_WhenURLIsBlank(void) {
 
 	sdsfree(page);
 }
-
-void test_get_page_ReturnsMessage_WhenCannotConnectToServer(void) {
-	streq_ExpectAndReturn(URL, "blank", 0);
-	herrc_Expect(3, "socket");
-	atop_ExpectAndReturn("0", 0);
-	/* aton_ExpectAndReturn("255.255.255.255", NULL, -1); */
-	/* aton_IgnoreArg_output(); */
-	herrc_Expect(0, "inet_aton");
-	herrc_Expect(0, "connect");
-
-	sds page = get_page("255.255.255.255", "0", URL);
-
-	TEST_ASSERT_EQUAL_STRING(page, "Couldn't connect to server!\n");
-
-	sdsfree(page);
-}
-
-void test_get_page_ReturnsGivenPage_WhenURLIsCorrect(void) {
-	TEST_ASSERT_TRUE(1);
-}

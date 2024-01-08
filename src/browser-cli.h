@@ -1,7 +1,7 @@
 #ifndef BROWSER_CLI
 #define BROWSER_CLI
 
-#include <sds/sds.h>
+#include "sds/sds.h"
 
 void initRendering();
 void freeRendering();
