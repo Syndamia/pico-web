@@ -4,7 +4,16 @@ on:
     types: [opened, reopened, labeled, unlabeled, ready_for_review, review_requested, synchronize]
     branches:
       - 'main'
+
 jobs:
+  from_dev:
+    if: github.head_ref != 'dev'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: superbrothers/close-pull-request@v3
+      with:
+        comment: 'The only allowed pull requests to main are those from dev!'
+
   has_release_label:
     if: |
       ! contains(github.event.pull_request.labels.*.name, 'release:major') &&
