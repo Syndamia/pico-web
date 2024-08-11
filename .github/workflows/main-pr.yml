@@ -1,6 +1,7 @@
 name: Check if pr to main is from dev
 on:
   pull_request_target:
+    types: [opened]
     branches:
       - 'main'
 
