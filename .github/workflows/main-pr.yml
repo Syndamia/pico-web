@@ -1,14 +1,15 @@
 name: Check for release label inside pull request
 on:
   pull_request:
-    types: [opened, edited, ready_for_review, review_requested]
+    types: [opened, reopened, labeled, unlabeled, ready_for_review, review_requested, synchronize]
     branches:
       - 'main'
 jobs:
   has_release_label:
-    if: ! contains(github.event.pull_request.labels.*.name, 'release:major') &&
-        ! contains(github.event.pull_request.labels.*.name, 'release:minor') &&
-        ! contains(github.event.pull_request.labels.*.name, 'release:patch')
+    if: |
+      ! contains(github.event.pull_request.labels.*.name, 'release:major') &&
+      ! contains(github.event.pull_request.labels.*.name, 'release:minor') &&
+      ! contains(github.event.pull_request.labels.*.name, 'release:patch')
     runs-on: ubuntu-latest
     steps:
       - run: exit 1
