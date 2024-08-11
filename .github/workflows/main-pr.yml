@@ -1,24 +1,14 @@
-name: Check for release label inside pull request
+name: Check if pr to main is from dev
 on:
-  pull_request:
-    types: [opened, reopened, labeled, unlabeled, ready_for_review, review_requested, synchronize]
+  pull_request_target:
     branches:
       - 'main'
 
 jobs:
-  from_dev:
+  pr_to_main_from_dev:
     if: github.head_ref != 'dev'
     runs-on: ubuntu-latest
     steps:
     - uses: superbrothers/close-pull-request@v3
       with:
         comment: 'The only allowed pull requests to main are those from dev!'
-
-  has_release_label:
-    if: |
-      ! contains(github.event.pull_request.labels.*.name, 'release:major') &&
-      ! contains(github.event.pull_request.labels.*.name, 'release:minor') &&
-      ! contains(github.event.pull_request.labels.*.name, 'release:patch')
-    runs-on: ubuntu-latest
-    steps:
-      - run: exit 1
