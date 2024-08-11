@@ -7,6 +7,8 @@ on:
 jobs:
   pr_to_main_from_dev:
     if: github.head_ref != 'dev'
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
     - uses: superbrothers/close-pull-request@v3
