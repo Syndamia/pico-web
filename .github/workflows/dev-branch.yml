@@ -86,5 +86,5 @@ jobs:
         with:
           push: true
           context: .
-          file: Dockerfile.dev
+          file: ./docker/dev/Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-dev:latest

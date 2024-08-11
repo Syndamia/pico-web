@@ -5,7 +5,7 @@ on:
       - main
 jobs:
   Build-docker-and-push:
-    name: Build the docker container image and push it to dockerhub
+    name: Build the production docker container image and push it to dockerhub
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,6 +18,8 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           push: true
+          context: .
+          file: ./docker/prod/Dockerfile
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-server:latest
 
   Release:
@@ -30,4 +32,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
-          bump_version_scheme: minor
+          bump_version_scheme: norelease # PR must have one of these labels: release:major, release:minor, release:patch
