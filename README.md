@@ -48,6 +48,7 @@ On each successful merge request to `main`,
 
 ## Project details
 
+
 You get two binaries, `server` and `browser`.
 
 URIs (URLs) are in the form `userinfo@address:portPATH`, where `address` and `port` could be skipped.
