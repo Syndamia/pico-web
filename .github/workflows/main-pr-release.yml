@@ -4,7 +4,6 @@ on:
     types: [opened, reopened, labeled, unlabeled, ready_for_review, review_requested, synchronize]
     branches:
       - 'main'
-
 jobs:
   has_release_label:
     if: |

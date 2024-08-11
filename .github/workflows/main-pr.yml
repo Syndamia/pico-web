@@ -3,7 +3,6 @@ on:
   pull_request_target:
     branches:
       - 'main'
-
 jobs:
   pr_to_main_from_dev:
     if: github.head_ref != 'dev'
