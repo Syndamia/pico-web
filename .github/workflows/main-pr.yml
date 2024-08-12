@@ -15,5 +15,5 @@ jobs:
     #         with:
       - name: Change base to dev
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         run: gh pr edit --base 'dev'
