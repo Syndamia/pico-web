@@ -47,7 +47,8 @@ jobs:
       - name: Checkout previous
         uses: actions/checkout@v2
         with:
-          ref: $${{ github.event.before }}
+          fetch-depth: 2
+      - run: git checkout HEAD^
       - name: Minikube deploy
         run: |
           kubectl apply -f kubernetes/
@@ -57,7 +58,7 @@ jobs:
           minikube service list
 
       - name: Checkout current
-        uses: actions/checkout@v4
+        run: git checkout main
       - name: Minikube update
         run: |
           kubectl apply -f kubernetes/
