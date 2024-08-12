@@ -58,6 +58,7 @@ jobs:
           kubectl rollout status deployment/pico-web-server-deployment
       - name: Minikube use
         run: |
+          minikube service pico-web-server-service --url
           echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
 
@@ -69,6 +70,7 @@ jobs:
           kubectl rollout status deployment/pico-web-server-deployment
       - name: Minikube use
         run: |
+          minikube service pico-web-server-service --url
           echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
       - name: Minikube stop
