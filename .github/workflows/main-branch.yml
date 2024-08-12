@@ -55,7 +55,8 @@ jobs:
           kubectl rollout status deployment/pico-web-server-deployment
       - name: Minikube use
         run: |
-          minikube service list
+          echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
+
 
       - name: Checkout current
         run: git checkout main
@@ -65,7 +66,7 @@ jobs:
           kubectl rollout status deployment/pico-web-server-deployment
       - name: Minikube use
         run: |
-          minikube service list
+          echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
       - name: Minikube stop
         run: |
