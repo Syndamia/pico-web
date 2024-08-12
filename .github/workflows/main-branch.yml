@@ -45,7 +45,7 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-server:latest
 
       - name: Checkout previous
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           ref: $${{ github.event.before }}
       - name: Minikube deploy
