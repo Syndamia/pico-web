@@ -1,7 +1,7 @@
 name: Check for release label inside pull request
 on:
   pull_request:
-    types: [opened, reopened, labeled, unlabeled, ready_for_review, review_requested, synchronize]
+    types: [opened, edited, reopened, labeled, unlabeled, ready_for_review, review_requested, synchronize]
     branches:
       - 'main'
 jobs:

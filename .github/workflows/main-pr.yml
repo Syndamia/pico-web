@@ -1,6 +1,7 @@
 name: Force to dev PRs not from dev to main
 on:
   pull_request:
+    types: [opened, edited, reopened, synchronize]
     branches:
       - 'main'
 jobs:
