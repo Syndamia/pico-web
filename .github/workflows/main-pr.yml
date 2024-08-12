@@ -1,4 +1,4 @@
-name: Check if pr to main is from dev
+name: Force to dev PRs not from dev to main
 on:
   pull_request:
     branches:
@@ -10,9 +10,14 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-    # - name: Add comment
-    #         uses: peter-evans/create-or-update-comment@v4
-    #         with:
+      - name: Add comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Tried to create a pull request to `main` from a branch that isn't `dev`!
+            **Changing destinaton branch to `dev`!**
       - name: Change base to dev
         run: gh pr edit $PR --base 'dev'
         env:
