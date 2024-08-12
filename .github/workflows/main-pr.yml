@@ -10,6 +10,8 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
-    - uses: superbrothers/close-pull-request@v3
-      with:
-        comment: 'The only allowed pull requests to main are those from dev!'
+    # - name: Add comment
+    #         uses: peter-evans/create-or-update-comment@v4
+    #         with:
+      - name: Change base to dev
+        steps: gh pr edit --base 'dev'
