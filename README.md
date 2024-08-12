@@ -46,10 +46,6 @@ On each successful merge request to `main`,
 - the production Kubernetes cluster is deployed with [minkube](TODO) in the pipeline and
 - a [GitHub release](https://github.com/Syndamia/pico-web/releases) is created, according to the pull request label
 
-```bash
-kubectl apply -f demo-production-server-deployment.yaml
-```
-
 ## Project details
 
 You get two binaries, `server` and `browser`.
