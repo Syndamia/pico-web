@@ -14,4 +14,4 @@ jobs:
     #         uses: peter-evans/create-or-update-comment@v4
     #         with:
       - name: Change base to dev
-        steps: gh pr edit --base 'dev'
+        run: gh pr edit --base 'dev'
