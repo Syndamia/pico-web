@@ -1,6 +1,6 @@
 name: Check if pr to main is from dev
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - 'main'
 jobs:
@@ -14,6 +14,7 @@ jobs:
     #         uses: peter-evans/create-or-update-comment@v4
     #         with:
       - name: Change base to dev
-        run: gh pr edit --base 'dev'
+        run: gh pr edit $PR --base 'dev'
         env:
           GH_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          PR: ${{ github.event.pull_request.html_url }}
