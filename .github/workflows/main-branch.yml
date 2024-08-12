@@ -56,20 +56,21 @@ jobs:
         run: |
           kubectl apply -f kubernetes/
           kubectl rollout status deployment/pico-web-server-deployment
-      - name: Minikube use
+      - name: Using cluster
         run: |
+          kubectl get all
           minikube service pico-web-server-service --url
           echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
-
       - name: Checkout current
         run: git checkout main
-      - name: Minikube update
+      - name: Using cluster
         run: |
           kubectl apply -f kubernetes/
           kubectl rollout status deployment/pico-web-server-deployment
       - name: Minikube use
         run: |
+          kubectl get all
           minikube service pico-web-server-service --url
           echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
