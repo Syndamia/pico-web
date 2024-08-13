@@ -52,7 +52,7 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-server:latest
       - name: Configure demo data
         run: |
-          kubectl cp ./demo/index.md /usr/share/demo/
+          minikube cp ./demo/index.md /usr/share/demo/
 
       # Setup old deployment
       - name: Checkout previous commit
