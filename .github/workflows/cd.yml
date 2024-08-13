@@ -30,7 +30,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.20.0
         with:
-          image-ref: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/pico-web:latest
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
 
