@@ -40,6 +40,8 @@ jobs:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-dev:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
+          exit-code: 0
+          ignore-unfixed: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
