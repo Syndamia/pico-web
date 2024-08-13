@@ -29,6 +29,9 @@ jobs:
     steps:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.20.0
+        env:
+          TRIVY_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
         with:
           image-ref: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/pico-web:latest'
           format: 'sarif'
