@@ -1,50 +1,56 @@
 # pico-web
 
-Small client-server application.
+Small client-server network socket application.
 The server receives a URL from a client and returns the appropriate page.
 
-## DevOps lifecycle
+## DevSecOps lifecycle
 
 ### 1. Plan
 
-With [GitHub issues](https://github.com/Syndamia/pico-web/issues) modifications to the project are started and discussed
+With [GitHub issues](https://github.com/Syndamia/pico-web/issues) and/or [GitHub pull requests](https://github.com/Syndamia/pico-web/pulls) modifications to the project are started and discussed
 
 ### 2. Code
 
 Our branching strategy is a "feature workflow with stable branches", meaning:
 
-- a feature branch is created for each issue
-- after the issue is resolved in that branch, it is merged into the `dev` branch
+- a feature branch is created (for each issue)
+- after the feature is completed in the branch, it is merged into the `dev` branch
 - after enough time has passed, the `dev` branch is merged into the `main` branch
 
-You must only push commits to feature branches.  
+Feature branches don't require special naming (though obviously can't be called `dev` or `main`).  
 Code can be added to `dev` only via pull requests from feature branches.  
 Code can be added to `main` only via pull requests from `dev`.  
 
 Merge requests must always be approved by a contributor and `dev` merge requests to `main` must always have one of these labels: `release:major`, `release:minor` or `release:patch`.
 
-### 3. CI
+These constraints are checked with workflows.
 
-On each push to feature branches and `dev` we execute the "feature-branch" pipeline, during which we run:
+### 3. Continuous Integration: Build, Test, Security
 
-- SAST: unit tests, [clang](TODO)'s `--analyze` static analysis and [flawfinder](TODO)'s security analysis <!-- and SonarCloud, Trivy -->
+On each push to feature branches and `dev` we execute the "cd" pipeline, during which we do:
+
+- SAST, with multiple different tools:
+  - unit tests
+  - [clang](TODO)'s `--analyze` static analysis
+  - [flawfinder](TODO)'s security analysis
+  <!-- and SonarCloud, Trivy -->
 <!--
 - SCA: https://github.com/multilang-depends/depends
 -->
-- the `Makefile` for building our application
+- Application build
+- *(on `dev` branch)* Build and push to development [dockerhub](https://hub.docker.com/r/syndamia/pico-web-dev)
 
-### 4. CD
+### 4. Continuous Deployment: Release, Deploy
 
 On each successful merge request to `dev`,
 
-- a development docker image is deployed to [dockerhub](https://hub.docker.com/r/syndamia/pico-web-dev) and
-- the development Kubernetes cluster is deployed with [minikube](TODO) in the pipeline
+- a development docker image is released to [dockerhub](https://hub.docker.com/r/syndamia/pico-web-dev)
 
 On each successful merge request to `main`,
 
-- the production docker image is deployed to [dockerhub](https://hub.docker.com/r/syndamia/pico-web),
-- the production Kubernetes cluster is deployed with [minkube](TODO) in the pipeline and
-- a [GitHub release](https://github.com/Syndamia/pico-web/releases) is created, according to the pull request label
+- the production docker image is released to [dockerhub](https://hub.docker.com/r/syndamia/pico-web),
+- a [GitHub release](https://github.com/Syndamia/pico-web/releases) is created, according to the pull request label, and
+- the kubernetes cluster is deployed with [minkube](TODO) in the pipeline
 
 ## Project details
 

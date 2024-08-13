@@ -1,4 +1,4 @@
-name: Force to dev PRs not from dev to main
+name: Redirect PR base when it's main and head isn't dev
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
