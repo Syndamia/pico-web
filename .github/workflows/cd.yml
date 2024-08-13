@@ -41,6 +41,7 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
           sha: ${{ github.sha }}
+          ref: ${{ github.ref }}
 
   Release:
     name: Make github release
