@@ -28,7 +28,7 @@ jobs:
     needs: Build-docker-and-push
     steps:
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web:latest
           format: 'sarif'
