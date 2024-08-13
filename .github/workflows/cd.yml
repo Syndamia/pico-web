@@ -30,7 +30,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web:latest
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-server:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: 0
