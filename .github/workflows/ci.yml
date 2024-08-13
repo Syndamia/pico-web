@@ -15,7 +15,7 @@ jobs:
           name: source-code
           path: .
 
-  SAST-Unit-tests:
+  Unit-tests:
     runs-on: ubuntu-latest
     needs: Clone-repo
     steps:
@@ -25,7 +25,7 @@ jobs:
           path: .
       - run: make tests
 
-  SAST-clang:
+  clang-analysis:
     runs-on: ubuntu-latest
     needs: Clone-repo
     steps:
@@ -46,9 +46,20 @@ jobs:
       - run: sudo apt-get install -y flawfinder
       - run: make security-analysis
 
+  SAST-SonarCloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: source-code
+          path: .
+      - uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   Build:
     runs-on: ubuntu-latest
-    needs: [ SAST-Unit-tests, SAST-clang, SAST-flawfinder ]
+    needs: [ Unit-tests, clang-analysis, SAST-flawfinder, SAST-SonarCloud ]
     steps:
       - uses: actions/download-artifact@v3
         with:
