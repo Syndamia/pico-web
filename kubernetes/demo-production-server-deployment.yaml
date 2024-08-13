@@ -19,7 +19,7 @@ spec:
       containers:
       - name: pico-web-server-prod
         image: syndamia/pico-web-server:latest
-        args: [ 'demo,/usr/share/demo/,page.md' ]
+        args: [ 'demo,/usr/share/demo,page.md' ]
         ports:
         - containerPort: 8080
         volumeMounts:
@@ -54,7 +54,7 @@ spec:
   accessModes:
   - ReadWriteOnce
   hostPath:
-    path: "/tmp/demo" # You'll have to manually copy ./demo to here
+    path: "/usr/share/demo" # You'll have to manually copy ./demo to here
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

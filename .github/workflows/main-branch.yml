@@ -34,24 +34,31 @@ jobs:
         with:
           bump_version_scheme: norelease # PR must have one of these labels: release:major, release:minor, release:patch
 
+  # This emulates deploying to an actual (remote) cluster by first setting up the cluster on older commit and then rolling out current one
   Deploy-kubernetes:
     name: Deploy kubernetes cluster locally to an action
     runs-on: ubuntu-latest
     needs: Build-docker-and-push
     steps:
-      - run: sudo apt-get install -y socat
+      # Setup dependencies
+      - name: Install socat
+        run: sudo apt-get install -y socat
       - uses: medyagh/setup-minikube@master
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
       - name: Pull (release) docker image
         run: |
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/pico-web-server:latest
+      - name: Configure demo data
+        run: |
+          kubectl cp ./demo/index.md /usr/share/demo/
 
-      - name: Checkout previous
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-      - run: |
+      # Setup old deployment
+      - name: Checkout previous commit
+        run: |
           git checkout HEAD^
-          cp -r ./demo /tmp/
+      # Deploy previous version
       - name: Minikube deploy
         run: |
           kubectl apply -f kubernetes/
@@ -59,21 +66,23 @@ jobs:
       - name: Using cluster
         run: |
           kubectl get all
-          minikube service pico-web-server-service --url
           echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
+      # Setup current deployment
       - name: Checkout current
-        run: git checkout main
-      - name: Using cluster
+        run: |
+          git checkout main
+      # Deploy current version
+      - name: Minikube deploy
         run: |
           kubectl apply -f kubernetes/
           kubectl rollout status deployment/pico-web-server-deployment
-      - name: Minikube use
+      - name: Using cluster
         run: |
           kubectl get all
-          minikube service pico-web-server-service --url
           echo -ne 'demo@/' | socat STDIO TCP:$(minikube service pico-web-server-service --url | cut -d/ -f3-)
 
+      # End
       - name: Minikube stop
         run: |
           minikube stop
