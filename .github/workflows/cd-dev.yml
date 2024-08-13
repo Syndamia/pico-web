@@ -33,6 +33,8 @@ jobs:
     name: Scan development docker container with trivy
     runs-on: ubuntu-latest
     needs: Create-and-release-dev-container
+    permissions:
+      security-events: write
     steps:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -49,4 +51,3 @@ jobs:
           sarif_file: 'trivy-results.sarif'
           sha: ${{ github.sha }}
           ref: ${{ github.ref }}
-          token: ${{ secrets.TOKEN_GITHUB }}
