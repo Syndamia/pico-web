@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-pvc
+spec:
+  volumeName: demo-pv
+  storageClassName: ""
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: demo-pv
+spec:
+  volumeMode: Filesystem
+  capacity:
+    storage: 50Mi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/usr/share/demo" # You'll have to manually copy ./demo to here
