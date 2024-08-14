@@ -55,6 +55,11 @@ On each successful merge request to `main`,
 - a [GitHub release](https://github.com/Syndamia/pico-web/releases) is created, according to the pull request label, and
 - the kubernetes cluster is deployed with [minkube](TODO) in the pipeline
 
+### Non-code solutions
+
+- [SonarCloud](TODO), since for C it would require a complete compilation toolchain remake
+- Certain branch protections/requirements, since they can only be configure with GitHub website settings
+
 ## Project details
 
 You get two binaries, `server` and `browser`.
