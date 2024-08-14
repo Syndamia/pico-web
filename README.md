@@ -29,16 +29,19 @@ These constraints are checked with workflows.
 
 On each push to feature branches and `dev` we execute the "cd" pipeline, during which we do:
 
-- SAST, with multiple different tools:
+- Code testing:
   - unit tests
   - [clang](TODO)'s `--analyze` static analysis
+- SAST, with multiple different tools:
   - [flawfinder](TODO)'s security analysis
-  <!-- and SonarCloud, Trivy -->
+  - [SonarCloud](TODO) source code analysis *(automatic, not from workflow)*
 <!--
 - SCA: https://github.com/multilang-depends/depends
 -->
 - Application build
 - *(on `dev` branch)* Build and push to development [dockerhub](https://hub.docker.com/r/syndamia/pico-web-dev)
+- *(on `dev` branch)* Container security testing:
+  - [Trivy](TODO) docker container (binary) analysis
 
 ### 4. Continuous Deployment: Release, Deploy
 
@@ -48,7 +51,7 @@ On each successful merge request to `dev`,
 
 On each successful merge request to `main`,
 
-- the production docker image is released to [dockerhub](https://hub.docker.com/r/syndamia/pico-web),
+- the production docker image is released to [dockerhub](https://hub.docker.com/r/syndamia/pico-web), and it is scanned with [Trivy](TODO)
 - a [GitHub release](https://github.com/Syndamia/pico-web/releases) is created, according to the pull request label, and
 - the kubernetes cluster is deployed with [minkube](TODO) in the pipeline
 
