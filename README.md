@@ -31,17 +31,17 @@ On each push to feature branches and `dev` we execute the "cd" pipeline, during 
 
 - Code testing:
   - unit tests
-  - [clang](TODO)'s `--analyze` static analysis
+  - [clang](https://clang.llvm.org/)'s `--analyze` static analysis
 - SAST, with multiple different tools:
-  - [flawfinder](TODO)'s security analysis
-  - [SonarCloud](TODO) source code analysis *(automatic, not from workflow)*
+  - [flawfinder](https://dwheeler.com/flawfinder/)'s security analysis
+  - [SonarCloud](https://www.sonarsource.com/products/sonarcloud/) source code analysis *(automatic, not from workflow)*
 <!--
 - SCA: https://github.com/multilang-depends/depends
 -->
 - Application build
 - *(on `dev` branch)* Build and push to development [dockerhub](https://hub.docker.com/r/syndamia/pico-web-dev)
 - *(on `dev` branch)* Container security testing:
-  - [Trivy](TODO) docker container (binary) analysis
+  - [Trivy](https://trivy.dev/) docker container (binary) analysis
 
 ### 4. Continuous Deployment: Release, Deploy
 
@@ -51,13 +51,13 @@ On each successful merge request to `dev`,
 
 On each successful merge request to `main`,
 
-- the production docker image is released to [dockerhub](https://hub.docker.com/r/syndamia/pico-web), and it is scanned with [Trivy](TODO)
+- the production docker image is released to [dockerhub](https://hub.docker.com/r/syndamia/pico-web), and it is scanned with [Trivy](https://trivy.dev/)
 - a [GitHub release](https://github.com/Syndamia/pico-web/releases) is created, according to the pull request label, and
-- the kubernetes cluster is deployed with [minkube](TODO) in the pipeline
+- the kubernetes cluster is deployed with [minkube](https://minikube.sigs.k8s.io/docs/) in the pipeline
 
 ### Non-code solutions
 
-- [SonarCloud](TODO), since for C it would require a complete compilation toolchain remake
+- [SonarCloud](https://www.sonarsource.com/products/sonarcloud/), since for C it would require a complete compilation toolchain remake
 - Certain branch protections/requirements, since they can only be configure with GitHub website settings
 
 ## Project details
