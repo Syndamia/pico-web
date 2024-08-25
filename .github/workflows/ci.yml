@@ -63,7 +63,7 @@ jobs:
 
   Trivy-dev-test:
     runs-on: ubuntu-latest
-    need: Build
+    needs: Build
     permissions:
       security-events: write
     steps:
@@ -92,7 +92,7 @@ jobs:
 
   Trivy-prod-test:
     runs-on: ubuntu-latest
-    need: Build
+    needs: Build
     permissions:
       security-events: write
     steps:
