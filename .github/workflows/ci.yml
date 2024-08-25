@@ -71,6 +71,10 @@ jobs:
         with:
           name: source-code
           path: .
+      - uses: actions/download-artifact@v3
+        with:
+          name: dev-build-files
+          path: .
       - uses: docker/setup-buildx-action@v1
       - run: docker build -t pico-web-dev -f ./docker/dev/Dockerfile .
 
