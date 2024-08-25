@@ -39,8 +39,7 @@ On each push to feature branches and `dev` we execute the "cd" pipeline, during 
 - SCA: https://github.com/multilang-depends/depends
 -->
 - Application build
-- *(on `dev` branch)* Build and push to development [dockerhub](https://hub.docker.com/r/syndamia/pico-web-dev)
-- *(on `dev` branch)* Container security testing:
+- Container security testing (both production and dev containers):
   - [Trivy](https://trivy.dev/) docker container (binary) analysis
 
 ### 4. Continuous Deployment: Release, Deploy
