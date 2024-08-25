@@ -60,3 +60,61 @@ jobs:
         with:
           name: dev-build-files
           path: ./build
+
+  Trivy-dev-test:
+    runs-on: ubuntu-latest
+    need: Build
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: source-code
+          path: .
+      - uses: docker/setup-buildx-action@v1
+      - run: docker build -t pico-web-dev ./docker/dev/
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: pico-web-dev
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: 0
+          ignore-unfixed: true
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+          sha: ${{ github.sha }}
+          ref: ${{ github.ref }}
+
+  Trivy-prod-test:
+    runs-on: ubuntu-latest
+    need: Build
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: source-code
+          path: .
+      - uses: docker/setup-buildx-action@v1
+      - run: docker build -t pico-web ./docker/prod/
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: pico-web
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          exit-code: 0
+          ignore-unfixed: true
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+          sha: ${{ github.sha }}
+          ref: ${{ github.ref }}
